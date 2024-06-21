@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Size-Configuration</title>
+    <link rel="stylesheet" href="./css/bootstrap.min.css" />
+    <link rel="stylesheet" href="./css/master.css" />
+    <script type="module" src="./js/bootstrap.min.js"></script>
+    <script type="module" lang="javascript" src="js/xlsx.full.min.js"></script>
+    <script type="module" src="js/master.js"></script>
+  </head>
+  <body class="bg-body-secondary">
+    <div
+      id="loadingFile"
+      class="d-none align-items-center bg-light bg-opacity-75 bottom-0 end-0 justify-content-center position-fixed start-0 top-0"
+    >
+      <div
+        class="fs-1 spinner-border"
+        role="status"
+        style="width: 200px; height: 200px"
+      >
+        <span class="visually-hidden" style="">Loading...</span>
+      </div>
+    </div>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+      <div class="container-fluid">
+        <a class="navbar-brand fs-1 fw-bold text-uppercase" href="#"
+          >D<span class="text-warning">i</span>ce</a
+        >
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav ms-auto me-5 mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="#">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Photo Eight</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <form
+      id="formFileSize"
+      class="container mt-4 bg-white p-3 rounded text-black"
+    >
+      <div class="mb-3">
+        <label for="fileSize" class="form-label fs-3 text-center w-100">
+          Give me the file to which you want to add Size-Configuration.
+        </label>
+        <input class="form-control" type="file" id="fileSize" />
+      </div>
+      <button type="submit" class="btn btn-primary w-100">GenerateData</button>
+    </form>
+    <div class="container table-hight overflow-auto my-5">
+      <table
+        class="table table-bordered table-dark table-hover table-striped text-center text-nowrap"
+        id="dataTable"
+      >
+        <thead class="position-sticky top-0" id="tableHead"></thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <div class="text-center my-5">
+      <button
+        style="width: 500px"
+        id="downloadSheet"
+        class="btn btn-success"
+        type="button"
+      >
+        Download EXCEL File
+      </button>
+    </div>
+    <div
+      class="p-3 text-white w-100 text-center fs-1 bg-dark position-sticky bottom-0"
+    >
+      AL-Fared &copy;
+    </div>
+  </body>
+</html>
