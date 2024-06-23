@@ -23,12 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
       const json = XLSX.utils.sheet_to_json(worksheet);
-
-      if (json.length <= 0) {
-        alert("No data found in the file");
-        return;
-      }
-
+      if (json.length <= 0) return alert("No data found in the file");
       const [generateData, keys] = addPackRatioAppendOnSizeConfiguration(json);
       renderTable(generateData, keys);
     } catch (error) {
@@ -50,23 +45,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function addPackRatioAppendOnSizeConfiguration(json = []) {
     const generate = json.map((el) => {
+      if (!el["Size Configuration"])
+        return { ...el, Error: "Size Configuration is not defined" };
+      if (!el["Pack Ratio"]) return { ...el, Error: "Pack Ratio" };
+      if (!el["Master Box Quantity"]) return { ...el, Error: "Pack Ratio" };
       const sizeConfiguration = el["Size Configuration"]
+        .toString()
         .split("-")
         .map((size) => size.trim());
-      const packRatio = el["Pack Ratio"].split("-").map((size) => Number(size));
+      const packRatio = el["Pack Ratio"]
+        .toString()
+        .split("-")
+        .map((size) => Number(size));
       const masterBoxQuantity = Number(el["Master Box Quantity"]);
       const isErrorRatio =
         packRatio.reduce((prev, curr) => prev + curr, 0) !== masterBoxQuantity;
       const isErrorConfiguration =
         sizeConfiguration.length !== packRatio.length;
-
-      if (isErrorRatio) {
+      if (isErrorRatio)
         return { ...el, Error: "Pack Ratio not equal Master Box Quantity" };
-      }
-      if (isErrorConfiguration) {
+      if (isErrorConfiguration)
         return { ...el, Error: "Size Configuration not equal Pack Ratio" };
-      }
-
       const result = sizeConfiguration.reduce((acc, size, index) => {
         acc[size] =
           (packRatio[index] * Number(el["PO Qty"])) / masterBoxQuantity;
