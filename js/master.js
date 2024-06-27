@@ -4,6 +4,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const loading = document.getElementById("loadingFile");
   const tableContainer = document.getElementById("table-container");
   const buttonContainer = document.getElementById("buttonsCollapse");
+  let excelColumns;
+  let excelRows;
+
   form.addEventListener("submit", handleFormSubmit);
   downloadSheet.addEventListener("click", exportToExcel);
 
@@ -19,21 +22,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       loading.classList.replace("d-none", "d-flex");
-      // in the future, I will git from LocalStorage and generate and than show it to user
       tableContainer.innerHTML = "";
       buttonContainer.innerHTML = "";
       window.localStorage.clear();
-      // Break point
+
       const data = await readFileAsArrayBuffer(file);
       const workbook = XLSX.read(new Uint8Array(data), { type: "array" });
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
 
-      // Get both headers and data in one go
       const jsonWithHeaders = XLSX.utils.sheet_to_json(worksheet, {
         header: 1,
       });
-      const keysBeforeGenerated = jsonWithHeaders[0];
+      const headers = jsonWithHeaders[0];
       const json = XLSX.utils.sheet_to_json(worksheet);
 
       if (json.length <= 0) {
@@ -41,18 +42,15 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      const { generateColumns, generateRows } =
-        addPackRatioAppendOnSizeConfiguration(json, keysBeforeGenerated);
+      const { generateColumns, generateRows } = processSizeConfiguration(
+        json,
+        headers
+      );
       renderTable(generateColumns);
       renderTable(generateRows);
-      console.log(generateColumns);
 
-      // Store data in localStorage for exporting
-      window.localStorage.setItem(
-        "generateColumns",
-        JSON.stringify(generateColumns)
-      );
-      window.localStorage.setItem("generateRows", JSON.stringify(generateRows));
+      excelColumns = generateColumns;
+      excelRows = generateRows;
     } catch (error) {
       console.error("Error processing file:", error);
       alert("An error occurred while processing the file");
@@ -70,7 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function addPackRatioAppendOnSizeConfiguration(json, headers) {
+  function processSizeConfiguration(json, headers) {
     const generateRows = [];
     const generateColumns = [];
 
@@ -88,10 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
         .toString()
         .split("-")
         .map((size) => size.trim());
-      const packRatio = row["Pack Ratio"]
-        .toString()
-        .split("-")
-        .map((size) => Number(size));
+      const packRatio = row["Pack Ratio"].toString().split("-").map(Number);
       const masterBoxQuantity = Number(row["Master Box Quantity"]);
       const hasErrorInRatio =
         packRatio.reduce((prev, curr) => prev + curr, 0) !== masterBoxQuantity;
@@ -251,33 +246,24 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function exportToExcel() {
-    const generateColumns = JSON.parse(
-      window.localStorage.getItem("generateColumns")
+    if (!excelColumns || !excelRows) {
+      alert("There is no data to process");
+      return;
+    }
+    const columnsData = [excelColumns.keys].concat(
+      excelColumns.data.map((row) => excelColumns.keys.map((key) => row[key]))
     );
-    const generateRows = JSON.parse(
-      window.localStorage.getItem("generateRows")
-    );
-
-    // Convert data to arrays for both sheets
-    const columnsData = [generateColumns.keys].concat(
-      generateColumns.data.map((row) =>
-        generateColumns.keys.map((key) => row[key])
-      )
-    );
-    const rowsData = [generateRows.keys].concat(
-      generateRows.data.map((row) => generateRows.keys.map((key) => row[key]))
+    const rowsData = [excelRows.keys].concat(
+      excelRows.data.map((row) => excelRows.keys.map((key) => row[key]))
     );
 
-    // Convert to worksheets
     const wsColumns = XLSX.utils.aoa_to_sheet(columnsData);
     const wsRows = XLSX.utils.aoa_to_sheet(rowsData);
 
-    // Create workbook and append sheets
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, wsColumns, "ColumnsData");
     XLSX.utils.book_append_sheet(wb, wsRows, "RowsData");
 
-    // Write to file
     XLSX.writeFile(wb, "SizeConfiguration.xlsx");
   }
 });
