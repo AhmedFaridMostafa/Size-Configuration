@@ -1,8 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("formFileSize");
   const downloadSheet = document.getElementById("downloadSheet");
-  const table = document.getElementById("dataTable");
   const loading = document.getElementById("loadingFile");
+  const tableContainer = document.getElementById("table-container");
+  const buttonContainer = document.getElementById("buttonsCollapse");
   form.addEventListener("submit", handleFormSubmit);
   downloadSheet.addEventListener("click", exportToExcel);
 
@@ -18,14 +19,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       loading.classList.replace("d-none", "d-flex");
+      // in the future, I will git from LocalStorage and generate and than show it to user
+      tableContainer.innerHTML = "";
+      buttonContainer.innerHTML = "";
+      window.localStorage.clear();
+      // Break point
       const data = await readFileAsArrayBuffer(file);
       const workbook = XLSX.read(new Uint8Array(data), { type: "array" });
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
+
+      // Get both headers and data in one go
+      const jsonWithHeaders = XLSX.utils.sheet_to_json(worksheet, {
+        header: 1,
+      });
+      const keysBeforeGenerated = jsonWithHeaders[0];
       const json = XLSX.utils.sheet_to_json(worksheet);
-      if (json.length <= 0) return alert("No data found in the file");
-      const [generateData, keys] = addPackRatioAppendOnSizeConfiguration(json);
-      renderTable(generateData, keys);
+
+      if (json.length <= 0) {
+        alert("No data found in the file");
+        return;
+      }
+
+      const { generateColumns, generateRows } =
+        addPackRatioAppendOnSizeConfiguration(json, keysBeforeGenerated);
+      renderTable(generateColumns);
+      renderTable(generateRows);
+      console.log(generateColumns);
+
+      // Store data in localStorage for exporting
+      window.localStorage.setItem(
+        "generateColumns",
+        JSON.stringify(generateColumns)
+      );
+      window.localStorage.setItem("generateRows", JSON.stringify(generateRows));
     } catch (error) {
       console.error("Error processing file:", error);
       alert("An error occurred while processing the file");
@@ -43,54 +70,161 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function addPackRatioAppendOnSizeConfiguration(json = []) {
-    const generate = json.map((el) => {
-      if (!el["Size Configuration"])
-        return { ...el, Error: "Size Configuration is not defined" };
-      if (!el["Pack Ratio"]) return { ...el, Error: "Pack Ratio" };
-      if (!el["Master Box Quantity"]) return { ...el, Error: "Pack Ratio" };
-      const sizeConfiguration = el["Size Configuration"]
+  function addPackRatioAppendOnSizeConfiguration(json, headers) {
+    const generateRows = [];
+    const generateColumns = [];
+
+    json.forEach((row) => {
+      if (
+        !row["Size Configuration"] ||
+        !row["Pack Ratio"] ||
+        !row["Master Box Quantity"]
+      ) {
+        generateColumns.push({ ...row, Error: "Missing required fields" });
+        return;
+      }
+
+      const sizeConfiguration = row["Size Configuration"]
         .toString()
         .split("-")
         .map((size) => size.trim());
-      const packRatio = el["Pack Ratio"]
+      const packRatio = row["Pack Ratio"]
         .toString()
         .split("-")
         .map((size) => Number(size));
-      const masterBoxQuantity = Number(el["Master Box Quantity"]);
-      const isErrorRatio =
+      const masterBoxQuantity = Number(row["Master Box Quantity"]);
+      const hasErrorInRatio =
         packRatio.reduce((prev, curr) => prev + curr, 0) !== masterBoxQuantity;
-      const isErrorConfiguration =
+      const hasErrorInConfiguration =
         sizeConfiguration.length !== packRatio.length;
-      if (isErrorRatio)
-        return { ...el, Error: "Pack Ratio not equal Master Box Quantity" };
-      if (isErrorConfiguration)
-        return { ...el, Error: "Size Configuration not equal Pack Ratio" };
+
+      if (hasErrorInRatio || hasErrorInConfiguration) {
+        const errors = [];
+        if (hasErrorInRatio)
+          errors.push("Pack ratio does not equal master box quantity.");
+        if (hasErrorInConfiguration)
+          errors.push(
+            "Size configuration length does not equal pack ratio length."
+          );
+        generateColumns.push({ ...row, Error: errors.join("----") });
+        return;
+      }
+
       const result = sizeConfiguration.reduce((acc, size, index) => {
         acc[size] =
-          (packRatio[index] * Number(el["PO Qty"])) / masterBoxQuantity;
+          (packRatio[index] * Number(row["PO Qty"])) / masterBoxQuantity;
         return acc;
       }, {});
-      return { ...el, ...result };
+
+      Object.entries(result).forEach(([size, qty]) => {
+        const separateSize = {
+          orderingNumber: getSizeOrder(size),
+          bySize: size,
+          finalQTY: qty,
+        };
+        generateRows.push({ ...row, ...separateSize });
+      });
+
+      generateColumns.push({ ...row, ...result });
     });
 
     const allKeysSet = new Set();
     let hasError = false;
-    generate.forEach((obj) => {
-      Object.keys(obj).forEach((key) =>
-        key === "Error" ? (hasError = true) : allKeysSet.add(key)
-      );
+    generateColumns.forEach((obj) => {
+      Object.keys(obj).forEach((key) => {
+        if (key === "Error") return (hasError = true);
+        allKeysSet.add(key);
+      });
     });
-    const allKeysArray = Array.from(allKeysSet);
-    if (hasError) allKeysArray.push("Error");
-    return [generate, allKeysArray];
+
+    const allKeysOfColumns = headers.concat(
+      Array.from(allKeysSet).filter((key) => !headers.includes(key))
+    );
+    if (hasError) allKeysOfColumns.push("Error");
+
+    const allKeysOfRows = [...headers, "orderingNumber", "bySize", "finalQTY"];
+    return {
+      generateColumns: { data: generateColumns, keys: allKeysOfColumns },
+      generateRows: { data: generateRows, keys: allKeysOfRows },
+    };
   }
 
-  function renderTable(data, keys) {
-    const tableHead = document.getElementById("tableHead");
-    const tableBody = document.getElementById("tableBody");
-    tableHead.innerHTML = "";
-    tableBody.innerHTML = "";
+  function getSizeOrder(size) {
+    const sizeData = {
+      "3M": 1,
+      "6M": 2,
+      "9M": 3,
+      "12M": 4,
+      "18M": 5,
+      "24M": 6,
+      "36M": 7,
+      "2T": 9,
+      "3T": 10,
+      "4T": 11,
+      4: 12,
+      5: 13,
+      6: 14,
+      "6X": 15,
+      7: 16,
+      "7X": 17,
+      "4/5": 18,
+      "5/6": 19,
+      "6/6X": 20,
+      "6/7": 21,
+      "7/8": 22,
+      8: 23,
+      "10/12": 24,
+      "14/16": 25,
+      18: 26,
+      "18/20": 27,
+      S: 28,
+      M: 29,
+      L: 30,
+      XL: 31,
+      "2A": 32,
+      "3A": 33,
+      "4A": 34,
+      "5A": 35,
+      "6A": 36,
+      "8A": 37,
+      "10A": 38,
+      "12A": 39,
+      "14A": 40,
+      "16A": 41,
+    };
+    return sizeData[size];
+  }
+
+  function renderTable({ data, keys }) {
+    const uniqueId = Date.now().toString();
+    const button = `
+      <button
+        class="btn btn-dark fs-5 collapsed"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#${uniqueId}"
+        aria-expanded="false"
+        aria-controls="${uniqueId}"
+      >
+        Sheet ${buttonContainer.children.length + 1}
+      </button>`;
+    buttonContainer.innerHTML += button;
+
+    const table = document.createElement("table");
+    const tableHead = document.createElement("thead");
+    const tableBody = document.createElement("tbody");
+    table.id = uniqueId;
+    table.classList.add(
+      "table",
+      "table-bordered",
+      "table-dark",
+      "table-hover",
+      "table-striped",
+      "text-center",
+      "text-nowrap",
+      "collapse"
+    );
+    tableHead.classList.add("position-sticky", "top-0");
 
     const headRow = document.createElement("tr");
     keys.forEach((key) => {
@@ -111,12 +245,39 @@ document.addEventListener("DOMContentLoaded", () => {
       fragment.appendChild(bodyRow);
     });
     tableBody.appendChild(fragment);
+    table.appendChild(tableHead);
+    table.appendChild(tableBody);
+    tableContainer.appendChild(table);
   }
 
   function exportToExcel() {
-    const ws = XLSX.utils.table_to_sheet(table);
+    const generateColumns = JSON.parse(
+      window.localStorage.getItem("generateColumns")
+    );
+    const generateRows = JSON.parse(
+      window.localStorage.getItem("generateRows")
+    );
+
+    // Convert data to arrays for both sheets
+    const columnsData = [generateColumns.keys].concat(
+      generateColumns.data.map((row) =>
+        generateColumns.keys.map((key) => row[key])
+      )
+    );
+    const rowsData = [generateRows.keys].concat(
+      generateRows.data.map((row) => generateRows.keys.map((key) => row[key]))
+    );
+
+    // Convert to worksheets
+    const wsColumns = XLSX.utils.aoa_to_sheet(columnsData);
+    const wsRows = XLSX.utils.aoa_to_sheet(rowsData);
+
+    // Create workbook and append sheets
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+    XLSX.utils.book_append_sheet(wb, wsColumns, "ColumnsData");
+    XLSX.utils.book_append_sheet(wb, wsRows, "RowsData");
+
+    // Write to file
     XLSX.writeFile(wb, "SizeConfiguration.xlsx");
   }
 });
