@@ -4,6 +4,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const loading = document.getElementById("loadingFile");
   const tableContainer = document.getElementById("table-container");
   const buttonContainer = document.getElementById("buttonsCollapse");
+
+  let fixedRatio;
   let excelColumns;
   let excelRows;
 
@@ -12,9 +14,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function handleFormSubmit(event) {
     event.preventDefault();
+    fixedRatio = document.getElementById("fixedRatio")?.checked ?? false;
     const fileSize = document.getElementById("fileSize");
     const file = fileSize.files[0];
-
     if (!file) {
       alert("Please select a file");
       return;
@@ -73,30 +75,52 @@ document.addEventListener("DOMContentLoaded", () => {
     const generateColumns = [];
 
     json.forEach((row) => {
+      const firstChart = row["Ref#"]
+        ?.toString()
+        .split("-")[0]
+        .at(-1)
+        .toUpperCase();
+      const Gander =
+        firstChart === "B" ? "BOYS" : firstChart === "G" ? "GIRLS" : "UN KNOW";
+      const colorCode = `${row["Color"]}-${row["Fashion Color"]}`;
+      const RefCode = `${row["Ref#"]}-${row["Color"]}`;
+      const LP = `${row["Style"]}-${row["Color"]}-${row["Label"]}`;
       if (
         !row["Size Configuration"] ||
         !row["Pack Ratio"] ||
         !row["Master Box Quantity"]
       ) {
-        generateColumns.push({ ...row, Error: "Missing required fields" });
+        generateColumns.push({
+          ...row,
+          Gander,
+          colorCode,
+          RefCode,
+          LP,
+          Error: "Missing required fields",
+        });
         return;
       }
-
       const sizeConfiguration = row["Size Configuration"]
         .toString()
         .split("-")
         .map((size) => size.trim());
-      const packRatio = row["Pack Ratio"].toString().split("-").map(Number);
+      let packRatio = row["Pack Ratio"].toString().split("-").map(Number);
       const masterBoxQuantity = Number(row["Master Box Quantity"]);
-      const hasErrorInRatio =
-        packRatio.reduce((prev, curr) => prev + curr, 0) !== masterBoxQuantity;
+      const packRatioSum = packRatio.reduce((prev, curr) => prev + curr, 0);
+      const hasErrorInRatio = packRatioSum !== masterBoxQuantity;
       const hasErrorInConfiguration =
         sizeConfiguration.length !== packRatio.length;
-
-      if (hasErrorInRatio || hasErrorInConfiguration) {
+      if (hasErrorInRatio && fixedRatio) {
+        packRatio = packRatio.map((ratio) => {
+          const newRatio = Math.floor(masterBoxQuantity / packRatioSum);
+          return newRatio * ratio;
+        });
+      }
+      if ((hasErrorInRatio && !fixedRatio) || hasErrorInConfiguration) {
         const errors = [];
-        if (hasErrorInRatio)
-          errors.push("Pack ratio does not equal master box quantity.");
+        if (hasErrorInRatio) {
+          errors.push("Pack ratio sum does not equal master box quantity.");
+        }
         if (hasErrorInConfiguration)
           errors.push(
             "Size configuration length does not equal pack ratio length."
@@ -113,14 +137,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
       Object.entries(result).forEach(([size, qty]) => {
         const separateSize = {
-          orderingNumber: getSizeOrder(size),
+          orderingNumber: getSizeOrder(String(size).toUpperCase()),
           bySize: size,
           finalQTY: qty,
         };
-        generateRows.push({ ...row, ...separateSize });
+        generateRows.push({
+          ...row,
+          ...separateSize,
+          Gander,
+          colorCode,
+          RefCode,
+          LP,
+        });
       });
 
-      generateColumns.push({ ...row, ...result });
+      generateColumns.push({
+        ...row,
+        ...result,
+        Gander,
+        colorCode,
+        RefCode,
+        LP,
+      });
     });
 
     const allKeysSet = new Set();
@@ -131,13 +169,23 @@ document.addEventListener("DOMContentLoaded", () => {
         allKeysSet.add(key);
       });
     });
-
+    console.log(allKeysSet);
     const allKeysOfColumns = headers.concat(
       Array.from(allKeysSet).filter((key) => !headers.includes(key))
     );
     if (hasError) allKeysOfColumns.push("Error");
 
-    const allKeysOfRows = [...headers, "orderingNumber", "bySize", "finalQTY"];
+    const allKeysOfRows = [
+      ...headers,
+      "Gander",
+      "colorCode",
+      "RefCode",
+      "LP",
+      "orderingNumber",
+      "bySize",
+      "finalQTY",
+    ];
+
     return {
       generateColumns: { data: generateColumns, keys: allKeysOfColumns },
       generateRows: { data: generateRows, keys: allKeysOfRows },
@@ -172,20 +220,21 @@ document.addEventListener("DOMContentLoaded", () => {
       "14/16": 25,
       18: 26,
       "18/20": 27,
-      S: 28,
-      M: 29,
-      L: 30,
-      XL: 31,
-      "2A": 32,
-      "3A": 33,
-      "4A": 34,
-      "5A": 35,
-      "6A": 36,
-      "8A": 37,
-      "10A": 38,
-      "12A": 39,
-      "14A": 40,
-      "16A": 41,
+      XS: 28,
+      S: 29,
+      M: 30,
+      L: 31,
+      XL: 32,
+      "2A": 33,
+      "3A": 34,
+      "4A": 35,
+      "5A": 36,
+      "6A": 37,
+      "8A": 38,
+      "10A": 39,
+      "12A": 40,
+      "14A": 41,
+      "16A": 42,
     };
     return sizeData[size];
   }

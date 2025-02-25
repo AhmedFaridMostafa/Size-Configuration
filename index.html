@@ -28,27 +28,6 @@
         <a class="navbar-brand fs-1 fw-bold text-uppercase" href="#"
           >D<span class="text-warning">i</span>ce</a
         >
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarSupportedContent"
-          aria-controls="navbarSupportedContent"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav ms-auto me-5 mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="#">Home</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Photo Eight</a>
-            </li>
-          </ul>
-        </div>
       </div>
     </nav>
     <form
@@ -61,6 +40,15 @@
         </label>
         <input class="form-control" type="file" id="fileSize" />
       </div>
+      <div class="form-check mb-3">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          value=""
+          id="fixedRatio"
+        />
+        <label class="form-check-label" for="fixedRatio"> Fixed Ratio </label>
+      </div>
       <button type="submit" class="btn btn-primary w-100">GenerateData</button>
     </form>
     <div class="container my-5">
@@ -68,12 +56,7 @@
       <div id="table-container" class="table-hight overflow-auto"></div>
     </div>
     <div class="text-center my-5">
-      <button
-        style="width: 500px"
-        id="downloadSheet"
-        class="btn btn-success"
-        type="button"
-      >
+      <button id="downloadSheet" class="btn btn-success w-100" type="button">
         Download EXCEL File
       </button>
     </div>
