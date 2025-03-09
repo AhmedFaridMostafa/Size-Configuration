@@ -85,6 +85,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const colorCode = `${row["Color"]}-${row["Fashion Color"]}`;
       const RefCode = `${row["Ref#"]}-${row["Color"]}`;
       const LP = `${row["Style"]}-${row["Color"]}-${row["Label"]}`;
+      const ACCShipDate = generateACCShipDate(
+        row["Year"].toString().trim(),
+        row["Ship Date"].toString().trim()
+      );
       if (
         !row["Size Configuration"] ||
         !row["Pack Ratio"] ||
@@ -96,6 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
           colorCode,
           RefCode,
           LP,
+          ACCShipDate,
           Error: "Missing required fields",
         });
         return;
@@ -148,6 +153,7 @@ document.addEventListener("DOMContentLoaded", () => {
           colorCode,
           RefCode,
           LP,
+          ACCShipDate,
         });
       });
 
@@ -158,6 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
         colorCode,
         RefCode,
         LP,
+        ACCShipDate,
       });
     });
 
@@ -169,7 +176,6 @@ document.addEventListener("DOMContentLoaded", () => {
         allKeysSet.add(key);
       });
     });
-    console.log(allKeysSet);
     const allKeysOfColumns = headers.concat(
       Array.from(allKeysSet).filter((key) => !headers.includes(key))
     );
@@ -181,6 +187,7 @@ document.addEventListener("DOMContentLoaded", () => {
       "colorCode",
       "RefCode",
       "LP",
+      "ACCShipDate",
       "orderingNumber",
       "bySize",
       "finalQTY",
@@ -314,5 +321,12 @@ document.addEventListener("DOMContentLoaded", () => {
     XLSX.utils.book_append_sheet(wb, wsRows, "RowsData");
 
     XLSX.writeFile(wb, "SizeConfiguration.xlsx");
+  }
+
+  function generateACCShipDate(season, shipDate) {
+    const date = new Date(shipDate);
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const seasonCode = (parseInt(season) % 100) * 2;
+    return `${month}${seasonCode.toString().padStart(2, "0")}`;
   }
 });
