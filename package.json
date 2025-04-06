@@ -4,13 +4,26 @@
   "description": "\"# Size-Configuration\"",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@popperjs/core": "^2.11.8",
+    "ag-grid-community": "^33.2.1",
     "bootstrap": "^5.3.3",
     "xlsx": "^0.18.5"
   },
-  "keywords": []
+  "keywords": [],
+  "devDependencies": {
+    "@types/bootstrap": "^5.2.10",
+    "@types/node": "^22.14.0",
+    "@types/web": "^0.0.216",
+    "@types/xlsx": "^0.0.35",
+    "sass": "^1.86.2",
+    "typescript": "^5.8.2",
+    "vite": "^6.2.4"
+  }
 }

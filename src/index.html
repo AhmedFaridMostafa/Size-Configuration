@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Size Configuration Processor</title>
+    <meta
+      name="description"
+      content="Tool for processing Excel size configurations"
+    />
+  </head>
+  <body class="bg-body-secondary">
+    <!-- Loading overlay with ARIA attributes -->
+    <div
+      id="loadingFile"
+      class="d-none align-items-center justify-content-center bg-light bg-opacity-75 position-fixed top-0 start-0 end-0 bottom-0"
+      role="alert"
+      aria-live="assertive"
+    >
+      <div
+        class="fs-1 spinner-border"
+        role="status"
+        style="width: 200px; height: 200px"
+      >
+        <span class="visually-hidden">Loading document processing...</span>
+      </div>
+    </div>
+
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+      <div class="container-fluid">
+        <a class="navbar-brand fs-1 fw-bold text-uppercase" href="#">
+          D<span class="text-warning">i</span>ce
+        </a>
+      </div>
+    </nav>
+
+    <main class="container mt-4">
+      <!-- Added semantic main tag -->
+      <form
+        id="formFileSize"
+        class="bg-white p-3 rounded-3 shadow"
+        aria-labelledby="formTitle"
+      >
+        <h2 id="formTitle" class="visually-hidden">File Upload Form</h2>
+        <div class="mb-3">
+          <label for="fileSize" class="form-label fs-5 w-100 text-center">
+            Upload Excel file for size configuration processing
+          </label>
+          <input
+            class="form-control form-control-lg"
+            type="file"
+            id="fileSize"
+            accept=".xlsx, .xls"
+            aria-describedby="fileHelp"
+          />
+          <div id="fileHelp" class="form-text">
+            Supported formats: .xlsx, .xls
+          </div>
+        </div>
+
+        <div class="form-check form-switch mb-3">
+          <!-- Added switch styling -->
+          <input
+            class="form-check-input"
+            type="checkbox"
+            role="switch"
+            id="fixedRatio"
+          />
+          <label class="form-check-label" for="fixedRatio">
+            Enable Fixed Ratio Calculation
+          </label>
+        </div>
+
+        <button
+          type="submit"
+          class="btn btn-primary w-100 py-2"
+          aria-label="Process uploaded file"
+        >
+          Generate Data Tables
+        </button>
+      </form>
+
+      <!-- Data Display Section -->
+      <section aria-labelledby="dataSectionTitle">
+        <!-- Added sectioning -->
+        <h2 id="dataSectionTitle" class="visually-hidden">Processed Data</h2>
+        <div class="my-5">
+          <div id="showTable" class="dropdown my-3 visually-hidden">
+            <button
+              class="btn btn-primary dropdown-toggle w-100"
+              type="button"
+              id="dataViewDropdown"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              View LPO Data
+            </button>
+
+            <ul class="dropdown-menu w-100" aria-labelledby="dataViewDropdown">
+              <li>
+                <button class="dropdown-item" data-value="columns">
+                  View Columns LPO
+                </button>
+              </li>
+              <li>
+                <button class="dropdown-item" data-value="rows">
+                  View Rows LPO
+                </button>
+              </li>
+            </ul>
+          </div>
+          <div
+            id="table-container"
+            class="ag-theme-alpine"
+            style="height: fit-content; width: 100%"
+          ></div>
+        </div>
+      </section>
+
+      <!-- Error Container (added for future use) -->
+      <div
+        id="errorContainer"
+        class="alert alert-danger d-none"
+        role="alert"
+      ></div>
+
+      <div class="text-center my-5">
+        <button
+          id="downloadSheet"
+          class="btn btn-success w-100 py-2"
+          type="button"
+          aria-label="Download processed data as Excel file"
+        >
+          Download Excel Report
+        </button>
+      </div>
+    </main>
+
+    <footer class="p-3 text-white w-100 text-center fs-5 bg-dark">
+      <!-- Semantic footer -->
+      <p class="mb-0">&copy; AL-Fared <span>2024</span></p>
+    </footer>
+
+    <!-- Updated script path (assuming build process) -->
+    <script type="module" src="./js/main.ts"></script>
+  </body>
+</html>
