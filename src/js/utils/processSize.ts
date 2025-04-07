@@ -18,7 +18,7 @@ export default function processSizeConfiguration(rows: ProcessedRow[]): {
   rows.forEach((row) => {
     const refValue = String(row["Ref#"]).trim();
     const firstChart = refValue
-      ? refValue.split("-")[0].slice(-1).toUpperCase()
+      ? refValue.split("-")[0]!.slice(-1).toUpperCase()
       : undefined;
     const Gander =
       firstChart === "B" ? "BOYS" : firstChart === "G" ? "GIRLS" : "UN KNOW";
@@ -33,8 +33,10 @@ export default function processSizeConfiguration(rows: ProcessedRow[]): {
     const LPDes = `${String(row["Account"]).trim()}-${String(
       row["Label"]
     ).trim()}`;
-    const polyBag =
-      POLY_BAG[String(row["Label Name"]).trim()] || POLY_BAG["DEFAULT"];
+    const polyBag = POLY_BAG[String(row["Label Name"]).trim()] ?? {
+      individual: false,
+      master: false,
+    };
     const desCountry = COUNTRY_MAPPING[LPDes];
     const zodeCode = row["Label Name"].trim().length
       ? LABEL_ZODE_MAP[row["Label Name"]] || "Unknown"
@@ -68,7 +70,7 @@ export default function processSizeConfiguration(rows: ProcessedRow[]): {
       .split("-")
       .map((size: string) => size.trim());
 
-    let packRatio = row["Pack Ratio"].toString().trim().split("-").map(Number);
+    let packRatio = String(row["Pack Ratio"]).trim().split("-").map(Number);
     const POQty = Number(row["PO Qty"]);
     const masterBoxQuantity = Number(row["Master Box Quantity"]);
 
@@ -103,11 +105,12 @@ export default function processSizeConfiguration(rows: ProcessedRow[]): {
     // Calculate the result for each size
     const result = sizeConfiguration.reduce(
       (acc: Record<string, number>, size: string, index: number) => {
-        acc[size] = (packRatio[index] * POQty) / masterBoxQuantity;
+        acc[size] = (packRatio[index]! * POQty) / masterBoxQuantity;
         return acc;
       },
       {}
     );
+
     const polyIndividualQuantity = polyBag.individual ? POQty : 0;
     const polyMasterQuantity = polyBag.master
       ? Math.floor(POQty / packRatioSum)
@@ -120,7 +123,7 @@ export default function processSizeConfiguration(rows: ProcessedRow[]): {
         finalQTY: qty,
       };
       const REFSZ = `${RefCode}-${size}-${zodeCode}`;
-      const sizeGroup = SIZE_GROUP[`${row["Account"]}-${size}`] || "unknown";
+      const sizeGroup = SIZE_GROUP[`${row["Account"]}-${size}`] ?? "unknown";
       generateRows.push({
         ...row,
         ...separateSize,

@@ -23,6 +23,7 @@
     "@types/web": "^0.0.216",
     "@types/xlsx": "^0.0.35",
     "sass": "^1.86.2",
+    "sass-embedded": "^1.86.3",
     "typescript": "^5.8.2",
     "vite": "^6.2.4"
   }

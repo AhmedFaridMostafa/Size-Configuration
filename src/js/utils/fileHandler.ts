@@ -9,8 +9,8 @@ export async function readExcelFile(file: File): Promise<any[]> {
       if (workbook.SheetNames.length === 0) {
         reject("No sheets found in the file");
       }
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
+      const sheetName = workbook.SheetNames[0]!;
+      const sheet = workbook.Sheets[sheetName]!;
       const jsonData = XLSX.utils.sheet_to_json(sheet);
       resolve(jsonData);
     };

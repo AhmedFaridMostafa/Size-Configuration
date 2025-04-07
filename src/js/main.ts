@@ -50,7 +50,7 @@ async function handleFormSubmit(event: SubmitEvent) {
   toggleLoading(true);
   tableContainer.innerHTML = "";
   try {
-    const rows = await readExcelFile(fileInput.files[0]);
+    const rows = await readExcelFile(fileInput.files[0]!);
     if (rows.length === 0) {
       showError("No data found in the file");
       return;

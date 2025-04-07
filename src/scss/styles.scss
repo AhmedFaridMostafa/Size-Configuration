@@ -1,7 +1,11 @@
-@import "bootstrap/scss/bootstrap";
-@import "https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap";
+@use "bootstrap/scss/bootstrap" as bs with (
+  $enable-grid-classes: false // Disable unused grid if possible
+);
+
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap");
 @import "ag-grid-community/styles/ag-grid.css";
 @import "ag-grid-community/styles/ag-theme-alpine.css";
+
 body {
   font-family: "Roboto", sans-serif !important;
 }
