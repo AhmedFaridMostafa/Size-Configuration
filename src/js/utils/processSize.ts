@@ -155,8 +155,8 @@ export default function processSizeConfiguration(rows: ProcessedRow[]): {
       LP,
       "ACC ShipDate": ACCShipDate,
       "Season Code": seasonCode,
-      "Individual Polybag Quantity ": polyIndividualQuantity,
-      "Master Polybag Quantity ": polyMasterQuantity,
+      "Individual Polybag Quantity": polyIndividualQuantity,
+      "Master Polybag Quantity": polyMasterQuantity,
       "Sum Ratio": packRatioSum,
       "Des Country": desCountry,
     });

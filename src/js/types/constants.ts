@@ -210,8 +210,8 @@ export const EXCEL_COLUMN_HEADERS = [
   "Sum Ratio",
   "individual Polybag",
   "master Polybag",
-  "Individual Polybag Quantity ",
-  "Master Polybag Quantity ",
+  "Individual Polybag Quantity",
+  "Master Polybag Quantity",
   "color Code",
   "RefCode",
   "Des Country",
@@ -345,6 +345,8 @@ export const LABEL_ZODE_MAP: Record<string, string> = {
   "STREAM MALAYSIA": "ML",
   "HADDAD CANADA": "US-CA",
   "CANADA - WALMART STORE": "CA",
+  ECOM: "Fake",
+  "ECOM - ALT": "Fake",
 };
 
 export const POLY_BAG: Record<

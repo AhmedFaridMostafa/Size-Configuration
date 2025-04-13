@@ -23,7 +23,8 @@ export function renderTable({ data, keys }: TableData): void {
     columnDefs,
     rowData: data,
     pagination: true,
-    paginationPageSize: 20,
+    paginationPageSize: 10,
+    paginationPageSizeSelector: [10, 20, 50, 100, 150, 200],
     domLayout: "autoHeight",
     defaultColDef: {
       sortable: true,
