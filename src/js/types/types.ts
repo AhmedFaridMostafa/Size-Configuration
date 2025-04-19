@@ -52,8 +52,8 @@ export interface ProcessedColumn extends ExcelRow {
 }
 
 export interface TableData {
-  data: ProcessedRow[];
-  keys: (keyof ProcessedRow)[];
+  data: ProcessedRow[] | ProcessedColumn[];
+  keys: (keyof ProcessedRow)[] | (keyof ProcessedColumn)[];
 }
 
 export type SizeCategories =

@@ -26,9 +26,9 @@ export function generateSeasonCode(season: string, year: string): string {
 }
 
 export const getOrderedKeys = (
-  data: ProcessedRow[],
+  data: ProcessedRow[] | ProcessedColumn[],
   predefined: string[]
-): (keyof ProcessedRow)[] => {
+): (keyof ProcessedRow)[] | (keyof ProcessedColumn)[] => {
   const seen = new Set(predefined);
   const extraKeys: string[] = [];
 

@@ -1,6 +1,6 @@
 // Import our custom CSS
 import "../scss/styles.scss";
-import { ProcessedRow } from "./types/types";
+import { ProcessedColumn, ProcessedRow } from "./types/types";
 import { showError, toggleLoading } from "./utils/helpers";
 import { readExcelFile } from "./utils/fileHandler";
 import { renderTable } from "./components/table";
@@ -24,8 +24,8 @@ const tableContainer = document.getElementById(
 )! as HTMLDivElement;
 
 // Typed variables
-let keyExcelColumns: (keyof ProcessedRow)[] | null = null;
-let excelColumns: ProcessedRow[] | null = null;
+let keyExcelColumns: (keyof ProcessedColumn)[] | null = null;
+let excelColumns: ProcessedColumn[] | null = null;
 let keyExcelRows: (keyof ProcessedRow)[] | null = null;
 let excelRows: ProcessedRow[] | null = null;
 let renderTableOrNot = false;

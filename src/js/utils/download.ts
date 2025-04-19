@@ -1,11 +1,11 @@
 import * as XLSX from "xlsx";
-import { ProcessedRow } from "../types/types";
+import { ProcessedColumn, ProcessedRow } from "../types/types";
 import { showError } from "./helpers";
 
 interface DownloadSheetProps {
-  excelColumns: ProcessedRow[] | null;
+  excelColumns: ProcessedColumn[] | null;
   excelRows: ProcessedRow[] | null;
-  keyExcelColumns: (keyof ProcessedRow)[] | null;
+  keyExcelColumns: (keyof ProcessedColumn)[] | null;
   keyExcelRows: (keyof ProcessedRow)[] | null;
   fileName: string | undefined;
 }
