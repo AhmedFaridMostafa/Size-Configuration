@@ -1,166 +1,140 @@
 import {
-  COUNTRY_MAPPING,
-  LABEL_ZODE_MAP,
-  POLY_BAG,
   SIZE_GROUP,
-  SIZE_ORDER,
+  HANGER_DATA,
+  SizeCategoriesOrdering,
 } from "../types/constants";
-import { ProcessedRow } from "../types/types";
-import { generateACCShipDate, generateSeasonCode } from "./dateUtils";
 
-export default function processSizeConfiguration(rows: ProcessedRow[]): {
-  generateColumns: ProcessedRow[];
+import {
+  ExcelRow,
+  HangerData,
+  ProcessedColumn,
+  ProcessedRow,
+  Region,
+  SizeCategories,
+} from "../types/types";
+
+import {
+  createErrorColumn,
+  determineSizeGroupRegion,
+  formatHangerGroup,
+  processBaseFields,
+  processSizeData,
+} from "./dateUtils";
+
+export default function processSizeConfiguration(rows: ExcelRow[]): {
+  generateColumns: ProcessedColumn[];
   generateRows: ProcessedRow[];
 } {
-  const fixedRatio = document.getElementById("fixedRatio") as HTMLInputElement;
+  const generateColumns: ProcessedColumn[] = [];
   const generateRows: ProcessedRow[] = [];
-  const generateColumns: ProcessedRow[] = [];
+
   rows.forEach((row) => {
-    const refValue = String(row["Ref#"]).trim();
-    const firstChart = refValue
-      ? refValue.split("-")[0]!.slice(-1).toUpperCase()
-      : undefined;
-    const Gander =
-      firstChart === "B" ? "BOYS" : firstChart === "G" ? "GIRLS" : "UN KNOW";
-    const colorCode = `${row["Color"]}-${row["Fashion Color"]}`;
-    const RefCode = `${refValue}-${row["Color"]}`;
-    const LP = `${row["Style"]}-${row["Color"]}-${row["Label"]}`;
-    const ACCShipDate = generateACCShipDate(String(row["Original ETD"]).trim());
-    const seasonCode = generateSeasonCode(
-      String(row["Season"]).trim().toLowerCase(),
-      String(row["Year"]).trim()
-    );
-    const LPDes = `${String(row["Account"]).trim()}-${String(
-      row["Label"]
-    ).trim()}`;
-    const polyBag = POLY_BAG[String(row["Label Name"]).trim()] ?? {
-      individual: false,
-      master: false,
-    };
-    const desCountry = COUNTRY_MAPPING[LPDes];
-    const zodeCode = row["Label Name"].trim().length
-      ? LABEL_ZODE_MAP[row["Label Name"]] || "Unknown"
-      : "US";
+    // Process base fields common to all processing
+    const baseFields = processBaseFields(row);
 
-    if (
-      !row["Size Configuration"] ||
-      !row["Pack Ratio"] ||
-      !row["Master Box Quantity"]
-    ) {
-      generateColumns.push({
-        ...row,
-        ...polyBag,
-        Gander,
-        "color Code": colorCode,
-        RefCode,
-        LP,
-        "ACC ShipDate": ACCShipDate,
-        "Season Code": seasonCode,
-        "Des Country": desCountry,
-        "Zode Code": zodeCode,
-        Error: "Missing required fields",
-      });
-      return;
-    }
+    // Process size data and check for errors
+    const { sizeResult, packRatioSum, errors } = processSizeData(row);
 
-    // Process size configuration and pack ratio values
-    const sizeConfiguration = row["Size Configuration"]
-      .toString()
-      .trim()
-      .split("-")
-      .map((size: string) => size.trim());
-
-    let packRatio = String(row["Pack Ratio"]).trim().split("-").map(Number);
-    const POQty = Number(row["PO Qty"]);
-    const masterBoxQuantity = Number(row["Master Box Quantity"]);
-
-    const packRatioSum = packRatio.reduce(
-      (prev: number, curr: number) => prev + curr,
-      0
-    );
-    const hasErrorInRatio = packRatioSum !== masterBoxQuantity;
-    const hasErrorInConfiguration =
-      sizeConfiguration.length !== packRatio.length;
-
-    // Adjust ratios if fixedRatio is true
-    if (hasErrorInRatio && fixedRatio.checked) {
-      packRatio = packRatio.map(
-        (ratio: number) => Math.floor(masterBoxQuantity / packRatioSum) * ratio
+    // Handle errors
+    if (errors.length > 0) {
+      generateColumns.push(
+        createErrorColumn(row, baseFields, errors.join(" | "))
       );
+      return; // Skip to next iteration
     }
 
-    // If error still exists, record errors in generateColumns
-    if ((hasErrorInRatio && !fixedRatio.checked) || hasErrorInConfiguration) {
-      const errors: string[] = [];
-      if (hasErrorInRatio)
-        errors.push("Sum Ratio does not equal master box quantity.");
-      if (hasErrorInConfiguration)
-        errors.push(
-          "Size configuration length does not equal pack ratio length."
-        );
-      generateColumns.push({ ...row, Error: errors.join("----") });
-      return;
-    }
+    const poQty = Number(row["PO Qty"] || 0);
 
-    // Calculate the result for each size
-    const result = sizeConfiguration.reduce(
-      (acc: Record<string, number>, size: string, index: number) => {
-        acc[size] = (packRatio[index]! * POQty) / masterBoxQuantity;
-        return acc;
-      },
-      {}
-    );
-
-    const polyIndividualQuantity = polyBag.individual ? POQty : 0;
-    const polyMasterQuantity = polyBag.master
-      ? Math.floor(POQty / packRatioSum)
+    // Calculate polybag quantities
+    const polyIndividualQuantity = baseFields.polyBag.individual ? poQty : 0;
+    const polyMasterQuantity = baseFields.polyBag.master
+      ? Math.floor(poQty / packRatioSum)
       : 0;
-    // Create rows for each size with ordering details
-    Object.entries(result).forEach(([size, qty]) => {
-      const separateSize = {
-        orderingNumber: SIZE_ORDER[String(size).toUpperCase()],
-        bySize: size,
-        finalQTY: qty,
-      };
-      const REFSZ = `${RefCode}-${size}-${zodeCode}`;
-      const sizeGroup = SIZE_GROUP[`${row["Account"]}-${size}`] ?? "unknown";
+
+    const region: Region | "" = determineSizeGroupRegion(
+      String(row["Label Name"] || "")
+    );
+    const HangerOrFlat = String(row["Hang/Flat"]).trim() as "Hang" | "Flat";
+    const gander = baseFields.gander.toLowerCase() as "boys" | "girls";
+
+    const sizeGroupColumn = {} as Record<SizeCategories, string>;
+    const HangerGroupColumn = {} as HangerData;
+
+    Object.entries(sizeResult).forEach(([size, qty]) => {
+      const sizeInfo = SIZE_GROUP[region][size] ||
+        SIZE_GROUP.default[size] || { order: 0, boys: "", girls: "" };
+
+      const sizeGroup =
+        baseFields.gander !== "UN KNOW"
+          ? (String(sizeInfo[gander]) as SizeCategories) || "unknown"
+          : "unknown";
+
+      if (sizeGroup !== "unknown") {
+        sizeGroupColumn[sizeGroup] = sizeGroupColumn[sizeGroup]
+          ? `${sizeGroupColumn[sizeGroup]} - ${size}`
+          : size;
+      }
+      // Determine hanger code if applicable
+      const hangerInfo =
+        sizeGroup !== "unknown" &&
+        HangerOrFlat === "Hang" &&
+        HANGER_DATA[row["Account"]];
+
+      if (hangerInfo && !HangerGroupColumn[sizeGroup])
+        HangerGroupColumn[sizeGroup] = hangerInfo[sizeGroup];
+
+      const refsz = `${baseFields.refCode}-${size}-${baseFields.zodeCode}`;
+
+      // Create the processed row
       generateRows.push({
         ...row,
-        ...separateSize,
-        "individual Polybag": polyBag.individual,
-        "master Polybag": polyBag.master,
-        Gander,
-        "color Code": colorCode,
-        RefCode,
-        LP,
-        "ACC ShipDate": ACCShipDate,
-        "Season Code": seasonCode,
+        "Ordering Number": sizeInfo.order,
+        "By Size": size,
+        "Final QTY": qty,
+        "individual Polybag": baseFields.polyBag.individual,
+        "master Polybag": baseFields.polyBag.master,
+        Gander: baseFields.gander,
+        "color Code": baseFields.colorCode,
+        RefCode: baseFields.refCode,
+        LP: baseFields.lp,
+        "Hanger Code Top": hangerInfo ? hangerInfo[sizeGroup].top : "",
+        "Hanger Code Button": hangerInfo ? hangerInfo[sizeGroup].bottom : "",
+        "ACC ShipDate": baseFields.accShipDate,
+        "Season Code": baseFields.seasonCode,
+        "Size Group Ordering":
+          sizeGroup !== "unknown"
+            ? SizeCategoriesOrdering[sizeGroup]
+            : "unknown",
         "Size Group": sizeGroup,
         "Sum Ratio": packRatioSum,
-        "Des Country": desCountry,
-        "Zode Code": zodeCode,
-        "REF-C-S-D": REFSZ,
+        "Des Country": baseFields.desCountry,
+        "Zode Code": baseFields.zodeCode,
+        "REF-C-S-D": refsz,
       });
     });
 
-    // Append result object to generateColumns
+    // Add column summary
     generateColumns.push({
       ...row,
-      ...result,
-      "individual Polybag": polyBag.individual,
-      "master Polybag": polyBag.master,
-      Gander,
-      "color Code": colorCode,
-      RefCode,
-      LP,
-      "ACC ShipDate": ACCShipDate,
-      "Season Code": seasonCode,
+      ...sizeResult,
+      Gander: baseFields.gander,
+      "color Code": baseFields.colorCode,
+      RefCode: baseFields.refCode,
+      LP: baseFields.lp,
+      "ACC ShipDate": baseFields.accShipDate,
+      "Season Code": baseFields.seasonCode,
+      "Des Country": baseFields.desCountry,
+      "Zode Code": baseFields.zodeCode,
+      "individual Polybag": baseFields.polyBag.individual,
+      "master Polybag": baseFields.polyBag.master,
       "Individual Polybag Quantity": polyIndividualQuantity,
       "Master Polybag Quantity": polyMasterQuantity,
       "Sum Ratio": packRatioSum,
-      "Des Country": desCountry,
+      "Size Group": Object.keys(sizeGroupColumn).join("  |  "),
+      "Hanger Group": formatHangerGroup(HangerGroupColumn),
     });
   });
+
   return {
     generateColumns,
     generateRows,

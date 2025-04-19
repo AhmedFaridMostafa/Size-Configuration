@@ -5,12 +5,17 @@ export async function readExcelFile(file: File): Promise<any[]> {
     const reader = new FileReader();
     reader.onload = (e) => {
       const data = new Uint8Array(e.target!.result as ArrayBuffer);
-      const workbook = XLSX.read(data, { type: "array" });
+      const workbook = XLSX.read(data, {
+        type: "array",
+        cellDates: true, // Parse dates correctly
+        cellNF: false, // Don't parse number formats
+        cellStyles: false, // Skip cell styles for faster parsing
+      });
       if (workbook.SheetNames.length === 0) {
         reject(new Error("No sheets found in the file"));
         return;
       }
-      const sheet = workbook.Sheets["lpo"]!;
+      const sheet = workbook.Sheets["lpo"] || workbook.Sheets["LPO"];
       if (!sheet) {
         reject(new Error("Sheet 'lpo' not found in the file"));
         return;

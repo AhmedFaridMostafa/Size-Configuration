@@ -31,6 +31,8 @@ export function renderTable({ data, keys }: TableData): void {
       filter: true,
       resizable: true,
     },
+    rowBuffer: 20,
+    asyncTransactionWaitMillis: 100,
   };
   createGrid(tableContainer, gridOptions);
 }
