@@ -50,10 +50,12 @@ export default function processSizeConfiguration(rows: ExcelRow[]): {
     const polyMasterQuantity = baseFields.polyBag.master
       ? Math.floor(poQty / packRatioSum)
       : 0;
-
-    const region: Region | "" = determineSizeGroupRegion(
-      String(row["Label Name"] || "")
-    );
+    const ref = String(row["Ref#"] || "").trim();
+    const labelName = String(row["Label Name"] || "").trim();
+    const walmartRegex = /LSR[GB]-[A-Z]{2,}\dA\d{2,}/i;
+    const region: Region = walmartRegex.test(ref)
+      ? "walmart"
+      : determineSizeGroupRegion(labelName);
     const HangerOrFlat = String(row["Hang/Flat"]).trim() as "Hang" | "Flat";
     const gander = baseFields.gander.toLowerCase() as "boys" | "girls";
 
