@@ -90,6 +90,7 @@ export default function processSizeConfiguration(rows: ExcelRow[]): {
       // Create the processed row
       generateRows.push({
         ...row,
+        "Full Year": baseFields.fullYear,
         "Ordering Number": sizeInfo.order,
         "By Size": size,
         "Final QTY": qty,
@@ -127,6 +128,7 @@ export default function processSizeConfiguration(rows: ExcelRow[]): {
       "Season Code": baseFields.seasonCode,
       "Des Country": baseFields.desCountry,
       "Zode Code": baseFields.zodeCode,
+      "Full Year": baseFields.fullYear,
       "individual Polybag": baseFields.polyBag.individual,
       "master Polybag": baseFields.polyBag.master,
       "Individual Polybag Quantity": polyIndividualQuantity,

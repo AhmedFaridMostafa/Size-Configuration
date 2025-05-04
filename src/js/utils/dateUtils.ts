@@ -65,6 +65,7 @@ export const processBaseFields = (
   desCountry: string;
   zodeCode: string;
   polyBag: { individual: boolean; master: boolean };
+  fullYear: string;
 } => {
   // Ensure all required fields exist and have values
   const account = String(row.Account || "").trim();
@@ -83,6 +84,7 @@ export const processBaseFields = (
   const colorCode = `${color}-${fashionColor}`;
   const refCode = `${refValue}-${color}`;
   const lp = `${style}-${color}-${label}`;
+  const fullYear = `${season}${year}`;
   const accShipDate = generateACCShipDate(originalETD);
   const seasonCode = generateSeasonCode(season, year);
   const lpDes = `${account}-${label}`;
@@ -96,6 +98,7 @@ export const processBaseFields = (
     gander,
     colorCode,
     refCode,
+    fullYear,
     lp,
     accShipDate,
     seasonCode,
