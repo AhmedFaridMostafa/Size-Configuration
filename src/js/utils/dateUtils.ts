@@ -78,7 +78,7 @@ export const processBaseFields = (
   const originalETD = String(row["Original ETD"] || "").trim();
   const season = String(row.Season || "")
     .trim()
-    .toLowerCase();
+    .toUpperCase();
   const year = String(row.Year || "").trim();
   const gander = determineGender(refValue);
   const colorCode = `${color}-${fashionColor}`;

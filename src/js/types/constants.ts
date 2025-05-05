@@ -129,7 +129,7 @@ export const SEASON: Record<string, string> = {
   h: "Holiday",
 };
 
-export const SEASON_CODE: Record<string, number> = { s: 1, m: 2, f: 3, h: 4 };
+export const SEASON_CODE: Record<string, number> = { S: 1, M: 2, F: 3, H: 4 };
 
 export const EXCEL_COLUMN_HEADERS = [
   "Division",
