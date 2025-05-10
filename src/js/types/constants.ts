@@ -431,7 +431,9 @@ export const HANGER_DATA: { [account: string]: HangerData } = {
     "Big-(7-16)": { top: "472", bottom: "6112" },
     "Big-(8-20)": { top: "467", bottom: "6112" },
   },
+  T059M: {} as HangerData,
 };
+HANGER_DATA["T059M"] = HANGER_DATA["T082M"]!;
 
 export const SIZE_GROUP: SizeMappings = {
   US: {
