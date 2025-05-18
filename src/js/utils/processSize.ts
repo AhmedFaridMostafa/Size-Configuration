@@ -80,7 +80,7 @@ export default function processSizeConfiguration(rows: ExcelRow[]): {
       const hangerInfo =
         sizeGroup !== "unknown" &&
         HangerOrFlat === "Hang" &&
-        HANGER_DATA[row["Account"]];
+        HANGER_DATA[region === "walmart" ? "W113M" : row["Account"].trim()];
 
       if (hangerInfo && !HangerGroupColumn[sizeGroup])
         HangerGroupColumn[sizeGroup] = hangerInfo[sizeGroup];
