@@ -115,10 +115,11 @@ export const COUNTRY_MAPPING: Record<string, string> = {
   "W113M-HO": "USA-WALMART",
   "W113M-HP": "USA-WALMART",
   "W113M-HR": "USA-WALMART",
+  "W847M-WO": "USA-WALMART",
+  "W846M-CT": "CANADA-WALMART",
   "W846M-CN": "Global-Canada STOCK",
   "W846M-FZ": "Global-CANADA FGL SPORTS",
   "W846M-WN": "Global-CANADA WINNERS",
-  "W847M-WO": "USA-WALMART",
   "Z090M-SV": "Global-Panama ZafariI",
 };
 
