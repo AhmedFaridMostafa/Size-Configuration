@@ -14,20 +14,9 @@ export default defineConfig({
     },
   },
   root: resolve(__dirname, "src"),
-
   build: {
     outDir: resolve(__dirname, "dist"),
     emptyOutDir: true,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          bootstrap: ["bootstrap"],
-          agGrid: ["ag-grid-community"],
-          xlsx: ["xlsx"],
-          vendor: ["@popperjs/core"],
-        },
-      },
-    },
     chunkSizeWarningLimit: 1500, // Increase limit
   },
   server: {
