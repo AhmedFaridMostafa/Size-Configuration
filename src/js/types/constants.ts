@@ -290,7 +290,7 @@ export const EXCEL_ROW_HEADERS = [
   "Size Group",
   "Ordering Number",
   "By Size",
-  "REF-C-S-D",
+  "REF-C-S-D-FY",
   "Final QTY",
 ];
 

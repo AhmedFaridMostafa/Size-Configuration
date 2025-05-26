@@ -85,7 +85,7 @@ export default function processSizeConfiguration(rows: ExcelRow[]): {
       if (hangerInfo && !HangerGroupColumn[sizeGroup])
         HangerGroupColumn[sizeGroup] = hangerInfo[sizeGroup];
 
-      const refsz = `${baseFields.refCode}-${size}-${baseFields.zodeCode}`;
+      const REFCSDFY = `${baseFields.refCode}-${size}-${baseFields.zodeCode}-${baseFields.fullYear}`;
 
       // Create the processed row
       generateRows.push({
@@ -112,7 +112,7 @@ export default function processSizeConfiguration(rows: ExcelRow[]): {
         "Sum Ratio": packRatioSum,
         "Des Country": baseFields.desCountry,
         "Zode Code": baseFields.zodeCode,
-        "REF-C-S-D": refsz,
+        "REF-C-S-D-FY": REFCSDFY,
       });
     });
 

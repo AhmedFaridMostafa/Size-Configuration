@@ -30,7 +30,7 @@ export interface ProcessedRow extends ExcelRow {
   "Sum Ratio": number;
   "Des Country": string | "unknown";
   "Zode Code": string;
-  "REF-C-S-D": string;
+  "REF-C-S-D-FY": string;
   "Ordering Number": number;
   "By Size": string;
   "Final QTY": number;
