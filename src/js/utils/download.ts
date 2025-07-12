@@ -44,5 +44,5 @@ export function exportToExcel({
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, wsColumns, "LPO_Columns_Data");
   XLSX.utils.book_append_sheet(wb, wsRows, "LPO_Rows_Data");
-  XLSX.writeFile(wb, `${fileName ?? "Default"}_Size.xlsx`);
+  XLSX.writeFile(wb, `${fileName?.split(".")[0] ?? "Default"}_Size.xlsx`);
 }
