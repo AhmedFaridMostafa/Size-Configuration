@@ -61,7 +61,7 @@ export default function processSizeConfiguration(rows: ExcelRow[]): {
 
     const sizeGroupColumn = {} as Record<SizeCategories, string>;
     const HangerGroupColumn = {} as HangerData;
-    const REFCCDFY = `${baseFields.refCode}-Carton-${baseFields.zodeCode}-${baseFields.fullYear}`;
+    const SCCDFY = `${baseFields.styleColor}-Carton-${baseFields.zodeCode}-${baseFields.fullYear}`;
     Object.entries(sizeResult).forEach(([size, qty]) => {
       const sizeInfo = SIZE_GROUP[region][size] ||
         SIZE_GROUP.default[size] || { order: 0, boys: "", girls: "" };
@@ -123,7 +123,7 @@ export default function processSizeConfiguration(rows: ExcelRow[]): {
       Gander: baseFields.gander,
       "color Code": baseFields.colorCode,
       RefCode: baseFields.refCode,
-      "REF-C-C-D-FY": REFCCDFY,
+      "S-C-S-D-FY": SCCDFY,
       LP: baseFields.lp,
       "ACC ShipDate": baseFields.accShipDate,
       "Season Code": baseFields.seasonCode,

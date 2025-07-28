@@ -190,7 +190,7 @@ export const EXCEL_COLUMN_HEADERS = [
   "Season Code",
   "ACC ShipDate",
   "Zode Code",
-  "REF-C-C-D-FY",
+  "S-C-S-D-FY",
   "Carton UPC",
   "Gander",
   "LP",

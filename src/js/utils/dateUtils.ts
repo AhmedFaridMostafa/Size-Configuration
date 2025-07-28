@@ -66,6 +66,7 @@ export const processBaseFields = (
   zodeCode: string;
   polyBag: { individual: boolean; master: boolean };
   fullYear: string;
+  styleColor: string;
 } => {
   // Ensure all required fields exist and have values
   const account = String(row.Account || "").trim();
@@ -105,6 +106,7 @@ export const processBaseFields = (
     desCountry,
     zodeCode,
     polyBag,
+    styleColor: `${style}-${color}`,
   };
 };
 
