@@ -54,6 +54,7 @@ export const COUNTRY_MAPPING: Record<string, string> = {
   "H718M-KM": "Global-Korea",
   "H718M-KS": "Global-Korea",
   "H718M-KX": "Global-Korea",
+  "H718M-KR": "Global-Korea",
   "I201M-KO": "Global-Mexico",
   "I201M-MH": "Global-Mexico",
   "I201M-MK": "Global-Mexico",
@@ -336,6 +337,7 @@ export const LABEL_ZODE_MAP: Record<string, string> = {
   DUBAI: "DU",
   "ZAFARI PANAMA": "PZ",
   "KOREA ALT PACKING": "KO",
+  KOREA: "KO",
   SKYE: "SA",
   "INDIA APPAREL GROUP": "IN",
   "CANADA - WINNERS": "CA",
@@ -456,6 +458,7 @@ export const HANGER_DATA: { [account: string]: HangerData } = {
   },
   T059M: {} as HangerData,
 };
+
 HANGER_DATA["T059M"] = HANGER_DATA["T082M"]!;
 
 export const SIZE_GROUP: SizeMappings = {
