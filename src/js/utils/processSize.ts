@@ -33,7 +33,14 @@ export default function processSizeConfiguration(rows: ExcelRow[]): {
     const baseFields = processBaseFields(row);
 
     // Process size data and check for errors
-    const { sizeResult, packRatioSum, errors } = processSizeData(row);
+    const {
+      sizeResult,
+      packRatioSum,
+      fullCartons,
+      shortage,
+      totalCartonsNeeded,
+      errors,
+    } = processSizeData(row);
 
     // Handle errors
     if (errors.length > 0) {
@@ -137,6 +144,9 @@ export default function processSizeConfiguration(rows: ExcelRow[]): {
       "Sum Ratio": packRatioSum,
       "Size Group": Object.keys(sizeGroupColumn).join("  |  "),
       "Hanger Group": formatHangerGroup(HangerGroupColumn),
+      "Full Cartons": fullCartons,
+      Shortage: shortage,
+      "Total Cartons Needed": totalCartonsNeeded,
     });
   });
 

@@ -115,6 +115,9 @@ export const processSizeData = (
 ): {
   sizeResult: Record<string, number>;
   packRatioSum: number;
+  fullCartons: number;
+  shortage: number;
+  totalCartonsNeeded: number;
   errors: string[];
 } => {
   const requiredFields = [
@@ -140,6 +143,9 @@ export const processSizeData = (
     return {
       sizeResult: {},
       packRatioSum: 0,
+      fullCartons: 0,
+      shortage: 0,
+      totalCartonsNeeded: 0,
       errors: [`Missing required fields: ${missingFields.join(", ")}`],
     };
   }
@@ -178,8 +184,20 @@ export const processSizeData = (
     errors.push("Size configuration length does not equal pack ratio length.");
   }
 
+  const { fullCartons, shortage, totalCartonsNeeded } = calculateCartons(
+    poQty,
+    masterBoxQuantity
+  );
+
   if (errors.length > 0) {
-    return { sizeResult: {}, packRatioSum, errors };
+    return {
+      sizeResult: {},
+      packRatioSum,
+      errors,
+      fullCartons,
+      shortage,
+      totalCartonsNeeded,
+    };
   }
 
   // Calculate quantities for each size
@@ -191,7 +209,14 @@ export const processSizeData = (
     {}
   );
 
-  return { sizeResult, packRatioSum, errors: [] };
+  return {
+    sizeResult,
+    packRatioSum,
+    errors: [],
+    fullCartons,
+    shortage,
+    totalCartonsNeeded,
+  };
 };
 
 export const createErrorColumn = (
@@ -231,3 +256,30 @@ export const formatHangerGroup = (hangerGroupColumn: HangerData): string => {
     })
     .join(" - ");
 };
+
+export function calculateCartons(
+  quantity: number,
+  cartonCapacity: number
+): {
+  fullCartons: number;
+  shortage: number;
+  totalCartonsNeeded: number;
+} {
+  const fullCartons = Math.floor(quantity / cartonCapacity);
+  const remainder = quantity % cartonCapacity;
+  const totalCartonsNeeded = Math.ceil(quantity / cartonCapacity);
+
+  if (remainder > 0) {
+    return {
+      fullCartons,
+      shortage: remainder,
+      totalCartonsNeeded,
+    };
+  } else {
+    return {
+      fullCartons,
+      shortage: 0,
+      totalCartonsNeeded,
+    };
+  }
+}

@@ -130,10 +130,10 @@ export const COUNTRY_MAPPING: Record<string, string> = {
 };
 
 export const SEASON: Record<string, string> = {
-  s: "Spring",
-  m: "Summer",
-  f: "Fall",
-  h: "Holiday",
+  S: "Spring",
+  M: "Summer",
+  F: "Fall",
+  H: "Holiday",
 };
 
 export const SEASON_CODE: Record<string, number> = { S: 1, M: 2, F: 3, H: 4 };
@@ -185,6 +185,9 @@ export const EXCEL_COLUMN_HEADERS = [
   "Fashion Correctable Status",
   "Agent",
   "Country",
+  "Full Cartons",
+  "Shortage",
+  "Total Cartons Needed",
   "Full Year",
   "Size Group",
   "Hanger Group",
