@@ -381,6 +381,7 @@ export const POLY_BAG: Record<
   WALMART: { individual: true, master: false },
   "WALMART - ALTERNATE": { individual: true, master: false },
   "WALMART STORES - ALTERNATE": { individual: false, master: true },
+  "CANADA - WALMART STORE": { individual: false, master: true },
   "WALMART STORES": { individual: false, master: true },
   "ZAFARI PANAMA": { individual: true, master: true },
   "JC PENNEY": { individual: false, master: true },
