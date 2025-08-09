@@ -120,6 +120,7 @@ export default function processSizeConfiguration(rows: ExcelRow[]): {
         "Des Country": baseFields.desCountry,
         "Zode Code": baseFields.zodeCode,
         "REF-C-S-D-FY": REFCSDFY,
+        "Season Name": baseFields.seasonName,
       });
     });
 
@@ -147,6 +148,7 @@ export default function processSizeConfiguration(rows: ExcelRow[]): {
       "Full Cartons": fullCartons,
       Shortage: shortage,
       "Total Cartons Needed": totalCartonsNeeded,
+      "Season Name": baseFields.seasonName,
     });
   });
 

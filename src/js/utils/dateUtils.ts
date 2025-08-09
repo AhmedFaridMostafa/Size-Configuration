@@ -3,6 +3,7 @@ import {
   LABEL_ZODE_MAP,
   POLY_BAG,
   SEASON_CODE,
+  SEASON_NAME,
 } from "../types/constants";
 import {
   ExcelRow,
@@ -67,6 +68,7 @@ export const processBaseFields = (
   polyBag: { individual: boolean; master: boolean };
   fullYear: string;
   styleColor: string;
+  seasonName: string;
 } => {
   // Ensure all required fields exist and have values
   const account = String(row.Account || "").trim();
@@ -88,6 +90,7 @@ export const processBaseFields = (
   const fullYear = `${season}${year}`;
   const accShipDate = generateACCShipDate(originalETD);
   const seasonCode = generateSeasonCode(season, year);
+  const seasonName = SEASON_NAME[season] || "unknown";
   const lpDes = `${account}-${label}`;
   const polyBag = POLY_BAG[labelName] || POLY_BAG.DEFAULT!;
   const desCountry = COUNTRY_MAPPING[lpDes] || "unknown";
@@ -103,6 +106,7 @@ export const processBaseFields = (
     lp,
     accShipDate,
     seasonCode,
+    seasonName,
     desCountry,
     zodeCode,
     polyBag,

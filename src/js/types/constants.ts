@@ -129,7 +129,7 @@ export const COUNTRY_MAPPING: Record<string, string> = {
   "M844M-MG": "Global-Indonesia",
 };
 
-export const SEASON: Record<string, string> = {
+export const SEASON_NAME: Record<string, string> = {
   S: "Spring",
   M: "Summer",
   F: "Fall",
@@ -189,6 +189,7 @@ export const EXCEL_COLUMN_HEADERS = [
   "Shortage",
   "Total Cartons Needed",
   "Full Year",
+  "Season Name",
   "Size Group",
   "Hanger Group",
   "Season Code",
@@ -287,6 +288,7 @@ export const EXCEL_ROW_HEADERS = [
   "Agent",
   "Country",
   "Full Year",
+  "Season Name",
   "Hanger Code Top",
   "Hanger Code Button",
   "Season Code",
