@@ -9,6 +9,7 @@ import { EXCEL_COLUMN_HEADERS, EXCEL_ROW_HEADERS } from "./types/constants";
 import { exportToExcel } from "./utils/download";
 import * as bootstrap from "bootstrap";
 import processSizeConfiguration from "./utils/processSize";
+
 // Initialize Bootstrap components
 document.querySelectorAll(".dropdown-toggle").forEach((element) => {
   new bootstrap.Dropdown(element);
@@ -32,13 +33,21 @@ let renderTableOrNot = false;
 form.addEventListener("submit", handleFormSubmit);
 
 downloadSheet.addEventListener("click", () =>
-  exportToExcel({
-    excelColumns,
-    excelRows,
-    keyExcelColumns,
-    keyExcelRows,
-    fileName: fileInput.files?.[0]?.name,
-  })
+  exportToExcel(
+    [
+      {
+        data: excelColumns,
+        keys: keyExcelColumns,
+        name: "LPO_Columns_Data",
+      },
+      {
+        keys: keyExcelRows,
+        data: excelRows,
+        name: "LPO_Rows_Data",
+      },
+    ],
+    fileInput.files?.[0]?.name
+  )
 );
 
 async function handleFormSubmit(event: SubmitEvent) {
