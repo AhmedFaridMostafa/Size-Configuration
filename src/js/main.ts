@@ -4,11 +4,10 @@ import { ProcessedColumn, ProcessedRow } from "./types/types";
 import { showError, toggleLoading } from "./utils/helpers";
 import { readExcelFile } from "./utils/fileHandler";
 import { renderTable } from "./components/table";
-import { getOrderedKeys } from "./utils/dateUtils";
 import { EXCEL_COLUMN_HEADERS, EXCEL_ROW_HEADERS } from "./types/constants";
 import { exportToExcel } from "./utils/download";
 import * as bootstrap from "bootstrap";
-import processSizeConfiguration from "./utils/processSize";
+import { LPOProcess } from "./class/LPOProcess";
 
 // Initialize Bootstrap components
 document.querySelectorAll(".dropdown-toggle").forEach((element) => {
@@ -64,12 +63,23 @@ async function handleFormSubmit(event: SubmitEvent) {
       showError("No data found in the file");
       return;
     }
-    const processed = processSizeConfiguration(rows);
-    keyExcelColumns = getOrderedKeys(
+
+    // Create processor instance
+    const processor = new LPOProcess(rows);
+
+    // Process the data
+    const processed = processor.processSizeConfiguration();
+
+    // Get ordered keys for export
+    keyExcelColumns = LPOProcess.getOrderedKeys(
       processed.generateColumns,
       EXCEL_COLUMN_HEADERS
     );
-    keyExcelRows = getOrderedKeys(processed.generateRows, EXCEL_ROW_HEADERS);
+    keyExcelRows = LPOProcess.getOrderedKeys(
+      processed.generateRows,
+      EXCEL_ROW_HEADERS
+    );
+
     document.getElementById("showTable")!.classList.remove("visually-hidden");
     excelColumns = processed.generateColumns;
     excelRows = processed.generateRows;

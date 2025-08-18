@@ -1,4 +1,4 @@
-export interface ExcelRow {
+export interface LPOData {
   [key: string]: unknown;
   "Ref#": string;
   Color: string;
@@ -17,8 +17,8 @@ export interface ExcelRow {
   "Hang/Flat": "Hang" | "Flat";
 }
 
-export interface ProcessedRow extends ExcelRow {
-  Gander: "BOYS" | "GIRLS" | "UN KNOW";
+export interface ProcessedRow extends LPOData {
+  Gander: "BOYS" | "GIRLS" | "unknown";
   RefCode: string;
   LP: string;
   "individual Polybag": boolean;
@@ -36,8 +36,8 @@ export interface ProcessedRow extends ExcelRow {
   "Final QTY": number;
   Error?: string;
 }
-export interface ProcessedColumn extends ExcelRow {
-  Gander: "BOYS" | "GIRLS" | "UN KNOW";
+export interface ProcessedColumn extends LPOData {
+  Gander: "BOYS" | "GIRLS" | "unknown";
   "color Code": string;
   RefCode: string;
   LP: string;
@@ -70,13 +70,57 @@ export type HangerData = {
 };
 
 export type Region = "US" | "target" | "walmart" | "EU" | "default";
-export interface SizeInfo {
+export interface SizeEntry {
   order: number;
   boys: SizeCategories | "Kids-(2A-8A)" | "Big-(10A-12A)" | "";
   girls: SizeCategories | "Kids-(2A-8A)" | "Big-(10A-12A)" | "";
 }
-export type SizeMappings = {
-  [region in Region]: {
-    [sizeLabel: string]: SizeInfo;
-  };
-};
+
+export type SizeMap = Partial<Record<SizeKey, SizeEntry>>;
+
+export type SizeMappings = Record<Region, SizeMap>;
+
+export type SizeKey =
+  | "3M"
+  | "6M"
+  | "9M"
+  | "12M"
+  | "18M"
+  | "24M"
+  | "36M"
+  | "2T"
+  | "3T"
+  | "4T"
+  | "4"
+  | "5"
+  | "6"
+  | "6X"
+  | "7"
+  | "7X"
+  | "4/5"
+  | "5/6"
+  | "6/6X"
+  | "6/7"
+  | "7/8"
+  | "8"
+  | "10/12"
+  | "14/16"
+  | "18"
+  | "18/20"
+  | "XS"
+  | "S"
+  | "M"
+  | "L"
+  | "XL"
+  | "2A"
+  | "3A"
+  | "4A"
+  | "5A"
+  | "6A"
+  | "8A"
+  | "10A"
+  | "12A"
+  | "14A"
+  | "16A";
+
+export type Gander = "boys" | "girls" | "unknown";
