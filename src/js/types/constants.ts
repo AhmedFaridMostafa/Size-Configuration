@@ -353,6 +353,8 @@ export const LABEL_ZODE_MAP: Record<string, string> = {
   "HADDAD CANADA": "US-CA",
   "CANADA - WALMART STORE": "CA",
   "CANADA - WALMART ECOM": "CA",
+  "CANADA WALMART ECOM FLAT": "CA",
+  "CANADA WALMART HANGER": "CA",
   ECOM: "Fake",
   "ECOM - ALT": "Fake",
   "INDONESIA PT MAP": "ID",
