@@ -1,7 +1,7 @@
 import { HangerData, SizeCategories, SizeMappings } from "./types";
 
 export const SizeCategoriesOrdering: Record<
-  SizeCategories | "Kids-(2A-8A)" | "Big-(10A-12A)",
+  SizeCategories | "Kids-(2A-8A)" | "Big-(10A-16A)",
   number
 > = {
   Newborn: 1,
@@ -12,7 +12,7 @@ export const SizeCategoriesOrdering: Record<
   "Big-(7-16)": 6,
   "Big-(8-20)": 7,
   "Kids-(2A-8A)": 8,
-  "Big-(10A-12A)": 9,
+  "Big-(10A-16A)": 9,
 };
 
 export const COUNTRY_MAPPING: Record<string, string> = {
@@ -545,10 +545,10 @@ export const SIZE_GROUP: SizeMappings = {
     "5A": { order: 4, boys: "Kids-(2A-8A)", girls: "Kids-(2A-8A)" },
     "6A": { order: 5, boys: "Kids-(2A-8A)", girls: "Kids-(2A-8A)" },
     "8A": { order: 6, boys: "Kids-(2A-8A)", girls: "Kids-(2A-8A)" },
-    "10A": { order: 7, boys: "Big-(10A-12A)", girls: "Big-(10A-12A)" },
-    "12A": { order: 8, boys: "Big-(10A-12A)", girls: "Big-(10A-12A)" },
-    "14A": { order: 9, boys: "Big-(10A-12A)", girls: "Big-(10A-12A)" },
-    "16A": { order: 10, boys: "Big-(10A-12A)", girls: "Big-(10A-12A)" },
+    "10A": { order: 7, boys: "Big-(10A-16A)", girls: "Big-(10A-16A)" },
+    "12A": { order: 8, boys: "Big-(10A-16A)", girls: "Big-(10A-16A)" },
+    "14A": { order: 9, boys: "Big-(10A-16A)", girls: "Big-(10A-16A)" },
+    "16A": { order: 10, boys: "Big-(10A-16A)", girls: "Big-(10A-16A)" },
   },
   default: {
     "3M": { order: 1, boys: "Newborn", girls: "Newborn" },
@@ -588,9 +588,9 @@ export const SIZE_GROUP: SizeMappings = {
     "5A": { order: 35, boys: "Kids-(2A-8A)", girls: "Kids-(2A-8A)" },
     "6A": { order: 36, boys: "Kids-(2A-8A)", girls: "Kids-(2A-8A)" },
     "8A": { order: 37, boys: "Kids-(2A-8A)", girls: "Kids-(2A-8A)" },
-    "10A": { order: 38, boys: "Big-(10A-12A)", girls: "Big-(10A-12A)" },
-    "12A": { order: 39, boys: "Big-(10A-12A)", girls: "Big-(10A-12A)" },
-    "14A": { order: 40, boys: "Big-(10A-12A)", girls: "Big-(10A-12A)" },
-    "16A": { order: 41, boys: "Big-(10A-12A)", girls: "Big-(10A-12A)" },
+    "10A": { order: 38, boys: "Big-(10A-16A)", girls: "Big-(10A-16A)" },
+    "12A": { order: 39, boys: "Big-(10A-16A)", girls: "Big-(10A-16A)" },
+    "14A": { order: 40, boys: "Big-(10A-16A)", girls: "Big-(10A-16A)" },
+    "16A": { order: 41, boys: "Big-(10A-16A)", girls: "Big-(10A-16A)" },
   },
 };

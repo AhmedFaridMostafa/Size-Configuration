@@ -72,8 +72,8 @@ export type HangerData = {
 export type Region = "US" | "target" | "walmart" | "EU" | "default";
 export interface SizeEntry {
   order: number;
-  boys: SizeCategories | "Kids-(2A-8A)" | "Big-(10A-12A)" | "";
-  girls: SizeCategories | "Kids-(2A-8A)" | "Big-(10A-12A)" | "";
+  boys: SizeCategories | "Kids-(2A-8A)" | "Big-(10A-16A)" | "";
+  girls: SizeCategories | "Kids-(2A-8A)" | "Big-(10A-16A)" | "";
 }
 
 export type SizeMap = Partial<Record<SizeKey, SizeEntry>>;
