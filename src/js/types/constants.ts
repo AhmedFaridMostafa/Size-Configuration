@@ -400,6 +400,9 @@ export const POLY_BAG: Record<
   "ZAFARI PANAMA": { individual: true, master: true },
   "JC PENNEY": { individual: false, master: true },
   "DICK'S SPORTING GOODS": { individual: false, master: true },
+  "LEURU S.A. ARGENTINA": { individual: true, master: false },
+  "INDIA APPAREL GROUP": { individual: true, master: true },
+  "MAP GROUP": { individual: true, master: true },
   DEFAULT: { individual: false, master: false },
 };
 
