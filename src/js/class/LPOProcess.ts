@@ -7,7 +7,7 @@ import {
   SEASON_NAME,
   SIZE_GROUP,
   SizeCategoriesOrdering,
-} from "../types/constants";
+} from "../constants";
 import {
   Gander,
   LPOData,
@@ -18,7 +18,7 @@ import {
   SizeKey,
   HangerData,
   SizeEntry,
-} from "../types/types";
+} from "../types";
 
 /**
  * Result of base field processing
@@ -215,17 +215,16 @@ export class LPOProcess {
    * Processes base fields common to all rows
    */
   private processBaseFields(row: LPOData): BaseFieldsResult {
-    const account = this.getString(row.Account);
+    const account = this.getString(row["Account"]);
     const labelName = this.getString(row["Label Name"]);
     const refValue = this.getString(row["Ref#"]);
-    const color = this.getString(row.Color);
+    const color = this.getString(row["Color"]);
     const fashionColor = this.getString(row["Fashion Color"]);
-    const style = this.getString(row.Style);
-    const label = this.getString(row.Label);
+    const style = this.getString(row["Style"]);
+    const label = this.getString(row["Label"]);
     const originalETD = this.getString(row["Original ETD"]);
-    const season = this.getString(row.Season).toUpperCase();
-    const year = this.getString(row.Year);
-
+    const season = this.getString(row["Season"]).toUpperCase();
+    const year = this.getString(row["Year"]);
     const gander = this.determineGender(refValue);
     const colorCode = `${color}-${fashionColor}`;
     const refCode = `${refValue}-${color}`;
@@ -275,7 +274,7 @@ export class LPOProcess {
       .split("-")
       .map((ratio) => Number(ratio));
 
-    const poQty = Number(row["PO Qty"]) || 0;
+    const poQty = Number(row["Original PO Qty"]) || Number(row["PO Qty"]) || 0;
     const masterBoxQuantity = Number(row["Master Box Quantity"]) || 0;
     const packRatioSum = packRatio.reduce((sum, ratio) => sum + ratio, 0);
 
@@ -306,7 +305,9 @@ export class LPOProcess {
     // Calculate quantities for each size
     const sizeResult = sizeConfiguration.reduce<Record<SizeKey, number>>(
       (result, size, index) => {
-        result[size] = (packRatio[index]! * poQty) / masterBoxQuantity;
+        result[size] = Math.round(
+          (packRatio[index]! * poQty) / masterBoxQuantity
+        );
         return result;
       },
       {} as Record<SizeKey, number>

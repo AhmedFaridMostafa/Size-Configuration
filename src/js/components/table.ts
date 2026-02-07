@@ -1,4 +1,4 @@
-import { TableData } from "../types/types";
+import { TableData } from "../types";
 import {
   AllCommunityModule,
   ColDef,

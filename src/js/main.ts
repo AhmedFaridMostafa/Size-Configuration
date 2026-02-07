@@ -1,10 +1,10 @@
 // Import our custom CSS
 import "../scss/styles.scss";
-import { ProcessedColumn, ProcessedRow } from "./types/types";
+import { ProcessedColumn, ProcessedRow } from "./types";
 import { showError, toggleLoading } from "./utils/helpers";
 import { readExcelFile } from "./utils/fileHandler";
 import { renderTable } from "./components/table";
-import { EXCEL_COLUMN_HEADERS, EXCEL_ROW_HEADERS } from "./types/constants";
+import { EXCEL_COLUMN_HEADERS, EXCEL_ROW_HEADERS } from "./constants";
 import { exportToExcel } from "./utils/download";
 import * as bootstrap from "bootstrap";
 import { LPOProcess } from "./class/LPOProcess";

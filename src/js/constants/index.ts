@@ -1,4 +1,4 @@
-import { HangerData, SizeCategories, SizeMappings } from "./types";
+import { HangerData, SizeCategories, SizeMappings } from "../types";
 
 export const SizeCategoriesOrdering: Record<
   SizeCategories | "Kids-(2A-8A)" | "Big-(10A-16A)",
@@ -128,6 +128,8 @@ export const COUNTRY_MAPPING: Record<string, string> = {
   "Z090M-SV": "Global-Panama ZafariI",
   "L014M-LU": "Global-Argentina",
   "M844M-MG": "Global-Indonesia",
+  "W113M-HB": "USA-WALMART",
+  "W113M-HG": "USA-WALMART",
 };
 
 export const SEASON_NAME: Record<string, string> = {

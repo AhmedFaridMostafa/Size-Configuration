@@ -1,4 +1,4 @@
-import { ProcessedColumn, ProcessedRow } from "../types/types";
+import { ProcessedColumn, ProcessedRow } from "../types";
 import { showError } from "./helpers";
 import {
   ExcelFileProcessor,
