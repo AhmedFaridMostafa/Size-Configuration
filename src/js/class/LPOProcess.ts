@@ -8,17 +8,6 @@ import {
   SIZE_GROUP,
   SizeCategoriesOrdering,
 } from "../constants";
-import {
-  Gander,
-  LPOData,
-  ProcessedColumn,
-  ProcessedRow,
-  Region,
-  SizeCategories,
-  SizeKey,
-  HangerData,
-  SizeEntry,
-} from "../types";
 
 /**
  * Result of base field processing
@@ -29,12 +18,13 @@ interface BaseFieldsResult {
   gander: Gander;
   colorCode: string;
   refCode: string;
+  POQB: string;
   lp: string;
   accShipDate: string;
   seasonCode: string;
   desCountry: string;
   zodeCode: string;
-  polyBag: { individual: boolean; master: boolean };
+  polyBag: PolyBag;
   fullYear: string;
   styleColor: string;
   seasonName: string;
@@ -90,12 +80,12 @@ export class LPOProcess {
   /**
    * Main processing method that orchestrates the entire transformation
    */
-  public processSizeConfiguration(): {
+  public async processSizeConfiguration(): Promise<{
     generateColumns: ProcessedColumn[];
     generateRows: ProcessedRow[];
-  } {
+  }> {
     this.validateData();
-    this.processAllRows();
+    await this.processAllRows();
 
     return {
       generateColumns: [...this.processedColumns],
@@ -138,7 +128,7 @@ export class LPOProcess {
 
     if (missingFieldsSet.size > 0) {
       throw new Error(
-        `Missing required fields: ${Array.from(missingFieldsSet).join(", ")}`
+        `Missing required fields: ${Array.from(missingFieldsSet).join(", ")}`,
       );
     }
   }
@@ -146,27 +136,27 @@ export class LPOProcess {
   /**
    * Processes all rows in the dataset
    */
-  private processAllRows(): void {
-    this.data.forEach((row) => this.processRow(row));
+  private async processAllRows(): Promise<void> {
+    await Promise.all(this.data.map((row) => this.processRow(row)));
   }
 
   /**
    * Processes a single row of data
    */
-  private processRow(row: LPOData): void {
-    const baseFields = this.processBaseFields(row);
+  private async processRow(row: LPOData): Promise<void> {
+    const baseFields = await this.processBaseFields(row);
     const sizeResult = this.processSizeData(row);
 
     if (sizeResult.errors.length > 0) {
       this.processedColumns.push(
-        this.createErrorColumn(row, baseFields, sizeResult.errors.join(" | "))
+        this.createErrorColumn(row, baseFields, sizeResult.errors.join(" | ")),
       );
       return;
     }
 
     const cartonResult = this.calculateCartons(
       sizeResult.poQty,
-      sizeResult.masterBoxQuantity
+      sizeResult.masterBoxQuantity,
     );
     this.processValidRow(row, baseFields, sizeResult, cartonResult);
   }
@@ -178,18 +168,19 @@ export class LPOProcess {
     row: LPOData,
     baseFields: BaseFieldsResult,
     sizeResult: SizeProcessResult,
-    cartonResult: CartonResult
+    cartonResult: CartonResult,
   ): void {
     const region = this.determineRegion(
       baseFields.refValue,
-      baseFields.labelName
+      baseFields.labelName,
     );
-    const hangerOrFlat = this.getString(row["Hang/Flat"]) as "Hang" | "Flat";
+
+    const hangerOrFlat = this.getString(row["Hang/Flat"]) as HangerOrFlat;
 
     const polybagQuantities = this.calculatePolybagQuantities(
       baseFields.polyBag,
       sizeResult.poQty,
-      sizeResult.packRatioSum
+      sizeResult.packRatioSum,
     );
 
     const sizeGroupData = this.processSizeGroups(
@@ -197,7 +188,7 @@ export class LPOProcess {
       region,
       baseFields.gander,
       baseFields.account,
-      hangerOrFlat
+      hangerOrFlat,
     );
 
     this.createProcessedRows(row, baseFields, sizeResult, sizeGroupData);
@@ -207,14 +198,14 @@ export class LPOProcess {
       sizeResult,
       cartonResult,
       polybagQuantities,
-      sizeGroupData
+      sizeGroupData,
     );
   }
 
   /**
    * Processes base fields common to all rows
    */
-  private processBaseFields(row: LPOData): BaseFieldsResult {
+  private async processBaseFields(row: LPOData): Promise<BaseFieldsResult> {
     const account = this.getString(row["Account"]);
     const labelName = this.getString(row["Label Name"]);
     const refValue = this.getString(row["Ref#"]);
@@ -240,6 +231,7 @@ export class LPOProcess {
       ? LABEL_ZODE_MAP[labelName] || "unknown"
       : "US";
     const styleColor = `${style}-${color}`;
+    const POQB = await this.generateQBPO(styleColor);
     const SCCDFY = `${styleColor}-Carton-${zodeCode}-${fullYear}`;
 
     return {
@@ -259,16 +251,30 @@ export class LPOProcess {
       styleColor,
       SCCDFY,
       account,
+      POQB,
     };
   }
 
+  private async generateQBPO(data: unknown): Promise<string> {
+    const encoded = new TextEncoder().encode(JSON.stringify(data));
+    const hashBuffer = await crypto.subtle.digest(
+      "SHA-256",
+      encoded.buffer as ArrayBuffer,
+    );
+    const hash = Array.from(new Uint8Array(hashBuffer))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("")
+      .slice(0, 12)
+      .toUpperCase();
+    return `QB${hash}`;
+  }
   /**
    * Processes size configuration and pack ratio data
    */
   private processSizeData(row: LPOData): SizeProcessResult {
     const sizeConfiguration = this.getString(row["Size Configuration"])
       .split("-")
-      .map((size) => size.toUpperCase().trim()) as SizeKey[];
+      .map((size: string) => size.toUpperCase().trim()) as SizeKey[];
 
     let packRatio = this.getString(row["Pack Ratio"])
       .split("-")
@@ -288,7 +294,7 @@ export class LPOProcess {
 
     if (sizeConfiguration.length !== packRatio.length) {
       errors.push(
-        "Size configuration length does not equal pack ratio length."
+        "Size configuration length does not equal pack ratio length.",
       );
     }
 
@@ -306,11 +312,11 @@ export class LPOProcess {
     const sizeResult = sizeConfiguration.reduce<Record<SizeKey, number>>(
       (result, size, index) => {
         result[size] = Math.round(
-          (packRatio[index]! * poQty) / masterBoxQuantity
+          (packRatio[index]! * poQty) / masterBoxQuantity,
         );
         return result;
       },
-      {} as Record<SizeKey, number>
+      {} as Record<SizeKey, number>,
     );
 
     return { sizeResult, packRatioSum, masterBoxQuantity, poQty, errors: [] };
@@ -324,7 +330,7 @@ export class LPOProcess {
     region: Region,
     gander: Gander,
     account: string,
-    hangerOrFlat: "Hang" | "Flat"
+    hangerOrFlat: HangerOrFlat,
   ): SizeGroupResult {
     const sizeGroupColumn = {} as Record<SizeCategories, string>;
     const hangerGroupColumn = {} as HangerData;
@@ -333,12 +339,11 @@ export class LPOProcess {
       { sizeInfo: SizeEntry; sizeGroup: SizeCategories | "unknown" }
     >();
 
-    Object.keys(sizeResult).forEach((sizeKey) => {
-      const size = sizeKey as SizeKey;
+    (Object.keys(sizeResult) as SizeKey[]).forEach((size) => {
       const { sizeInfo, sizeGroup } = this.determineSizeGroup(
         region,
         size,
-        gander
+        gander,
       );
 
       sizeInfoMap.set(size, { sizeInfo, sizeGroup });
@@ -353,7 +358,7 @@ export class LPOProcess {
         account,
         sizeGroup,
         hangerOrFlat,
-        region
+        region,
       );
       if (
         hangerInfo &&
@@ -374,54 +379,60 @@ export class LPOProcess {
     row: LPOData,
     baseFields: BaseFieldsResult,
     sizeResult: SizeProcessResult,
-    sizeGroupData: SizeGroupResult
+    sizeGroupData: SizeGroupResult,
   ): void {
-    Object.entries(sizeResult.sizeResult).forEach(([sizeKey, qty]) => {
-      const size = sizeKey as SizeKey;
-      const sizeData = sizeGroupData.sizeInfoMap.get(size);
-      if (!sizeData) return;
+    (Object.entries(sizeResult.sizeResult) as [SizeKey, number][]).forEach(
+      ([size, qty]) => {
+        const sizeData = sizeGroupData.sizeInfoMap.get(size);
+        if (!sizeData) return;
 
-      const { sizeInfo, sizeGroup } = sizeData;
-      const hangerCode =
-        sizeGroup !== "unknown"
-          ? sizeGroupData.hangerGroupColumn[sizeGroup]
-          : undefined;
+        const { sizeInfo, sizeGroup } = sizeData;
 
-      const REFCSDFY = this.generateREFCSDFY({
-        refCode: baseFields.refCode,
-        size,
-        zodeCode: baseFields.zodeCode,
-        fullYear: baseFields.fullYear,
-      });
-
-      this.processedRows.push({
-        ...row,
-        "Full Year": baseFields.fullYear,
-        "Ordering Number": sizeInfo.order,
-        "By Size": size,
-        "Final QTY": qty,
-        "individual Polybag": baseFields.polyBag.individual,
-        "master Polybag": baseFields.polyBag.master,
-        Gander: baseFields.gander.toUpperCase() as "BOYS" | "GIRLS" | "unknown",
-        "color Code": baseFields.colorCode,
-        RefCode: baseFields.refCode,
-        LP: baseFields.lp,
-        "Hanger Code Top": hangerCode?.top || "",
-        "Hanger Code Button": hangerCode?.bottom || "",
-        "ACC ShipDate": baseFields.accShipDate,
-        "Season Code": baseFields.seasonCode,
-        "Size Group Ordering":
+        const hangerCode =
           sizeGroup !== "unknown"
-            ? SizeCategoriesOrdering[sizeGroup]
-            : "unknown",
-        "Size Group": sizeGroup,
-        "Sum Ratio": sizeResult.packRatioSum,
-        "Des Country": baseFields.desCountry,
-        "Zode Code": baseFields.zodeCode,
-        "REF-C-S-D-FY": REFCSDFY,
-        "Season Name": baseFields.seasonName,
-      });
-    });
+            ? sizeGroupData.hangerGroupColumn[sizeGroup]
+            : undefined;
+
+        const REFCSDFY = this.generateREFCSDFY({
+          refCode: baseFields.refCode,
+          size,
+          zodeCode: baseFields.zodeCode,
+          fullYear: baseFields.fullYear,
+        });
+
+        this.processedRows.push({
+          ...row,
+          "PO QB": baseFields.POQB,
+          "Full Year": baseFields.fullYear,
+          "Ordering Number": sizeInfo.order,
+          "By Size": size,
+          "Final QTY": qty,
+          "individual Polybag": baseFields.polyBag.individual,
+          "master Polybag": baseFields.polyBag.master,
+          Gander: baseFields.gander.toUpperCase() as
+            | "BOYS"
+            | "GIRLS"
+            | "unknown",
+          "color Code": baseFields.colorCode,
+          RefCode: baseFields.refCode,
+          LP: baseFields.lp,
+          "Hanger Code Top": hangerCode?.top || "",
+          "Hanger Code Button": hangerCode?.bottom || "",
+          "ACC ShipDate": baseFields.accShipDate,
+          "Season Code": baseFields.seasonCode,
+          "Size Group Ordering":
+            sizeGroup !== "unknown"
+              ? SizeCategoriesOrdering[sizeGroup]
+              : "unknown",
+          "Size Group": sizeGroup,
+          "Sum Ratio": sizeResult.packRatioSum,
+          "Des Country": baseFields.desCountry,
+          "Zode Code": baseFields.zodeCode,
+          "REF-C-S-D-FY": REFCSDFY,
+          "Season Name": baseFields.seasonName,
+        });
+      },
+    );
   }
 
   /**
@@ -433,7 +444,7 @@ export class LPOProcess {
     sizeResult: SizeProcessResult,
     cartonResult: CartonResult,
     polybagQuantities: { individual: number; master: number },
-    sizeGroupData: SizeGroupResult
+    sizeGroupData: SizeGroupResult,
   ): void {
     this.processedColumns.push({
       ...row,
@@ -459,6 +470,7 @@ export class LPOProcess {
       Shortage: cartonResult.shortage,
       "Total Cartons Needed": cartonResult.totalCartonsNeeded,
       "Season Name": baseFields.seasonName,
+      "PO QB": baseFields.POQB,
     });
   }
 
@@ -468,7 +480,7 @@ export class LPOProcess {
   private createErrorColumn(
     row: LPOData,
     baseFields: BaseFieldsResult,
-    error: string
+    error: string,
   ): ProcessedColumn {
     return {
       ...row,
@@ -484,6 +496,7 @@ export class LPOProcess {
       "master Polybag": baseFields.polyBag.master,
       "Individual Polybag Quantity": 0,
       "Master Polybag Quantity": 0,
+      "PO QB": baseFields.POQB,
       Error: error,
     };
   }
@@ -492,9 +505,9 @@ export class LPOProcess {
    * Calculates polybag quantities based on configuration
    */
   private calculatePolybagQuantities(
-    polyBag: { individual: boolean; master: boolean },
+    polyBag: PolyBag,
     poQty: number,
-    packRatioSum: number
+    packRatioSum: number,
   ): { individual: number; master: number } {
     return {
       individual: polyBag.individual ? poQty : 0,
@@ -520,8 +533,8 @@ export class LPOProcess {
     return firstChart === "B"
       ? "boys"
       : firstChart === "G"
-      ? "girls"
-      : "unknown";
+        ? "girls"
+        : "unknown";
   }
 
   private generateACCShipDate(originalDate: string): string {
@@ -539,7 +552,7 @@ export class LPOProcess {
 
   private calculateCartons(
     quantity: number,
-    cartonCapacity: number
+    cartonCapacity: number,
   ): CartonResult {
     const fullCartons = Math.floor(quantity / cartonCapacity);
     const remainder = quantity % cartonCapacity;
@@ -555,7 +568,7 @@ export class LPOProcess {
   private determineSizeGroup(
     region: Region,
     size: SizeKey,
-    gander: Gander
+    gander: Gander,
   ): { sizeInfo: SizeEntry; sizeGroup: SizeCategories | "unknown" } {
     const sizeInfo = SIZE_GROUP[region][size] ||
       SIZE_GROUP.default[size] || { order: 0, boys: "", girls: "" };
@@ -571,11 +584,10 @@ export class LPOProcess {
   private determineHangerInfo(
     account: string,
     sizeGroup: SizeCategories | "unknown",
-    hangerOrFlat: "Hang" | "Flat",
-    region: Region
+    hangerOrFlat: HangerOrFlat,
+    region: Region,
   ): HangerData | false {
     if (sizeGroup === "unknown" || hangerOrFlat !== "Hang") return false;
-
     const accountKey = region === "walmart" ? "W113M" : account.trim();
     return HANGER_DATA[accountKey] || false;
   }
@@ -598,7 +610,7 @@ export class LPOProcess {
     return Object.entries(hangerGroupColumn)
       .map(
         ([group, { top, bottom }]) =>
-          `(${group}:- ( Top:(${top}) - Bottom:(${bottom}) )`
+          `(${group}:- ( Top:(${top}) - Bottom:(${bottom}) )`,
       )
       .join(" - ");
   }
@@ -615,7 +627,7 @@ export class LPOProcess {
   private getRandomSampleIndices(): number[] {
     const sampleSize = Math.min(5, this.data.length);
     return Array.from({ length: sampleSize }, () =>
-      Math.floor(Math.random() * this.data.length)
+      Math.floor(Math.random() * this.data.length),
     );
   }
 
@@ -624,7 +636,7 @@ export class LPOProcess {
    */
   public static getOrderedKeys<T extends ProcessedRow | ProcessedColumn>(
     data: T[],
-    predefined: string[]
+    predefined: string[],
   ): (keyof T)[] {
     const seen = new Set(predefined);
     const extraKeys: string[] = [];

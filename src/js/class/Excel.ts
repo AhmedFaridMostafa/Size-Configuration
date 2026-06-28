@@ -37,7 +37,7 @@ export class ExcelFileProcessor {
       throw new Error(
         `Failed to read Excel file: ${
           error instanceof Error ? error.message : "Unknown error"
-        }`
+        }`,
       );
     }
   }
@@ -60,7 +60,7 @@ export class ExcelFileProcessor {
       throw new Error(
         `Failed to create Excel file: ${
           error instanceof Error ? error.message : "Unknown error"
-        }`
+        }`,
       );
     }
   }
@@ -85,14 +85,16 @@ export class ExcelFileProcessor {
    * @returns XLSX worksheet object
    */
   private static getLpoSheet(workbook: XLSX.WorkBook): XLSX.WorkSheet {
-    if (workbook.SheetNames.length === 0) {
+    if (workbook.SheetNames.length === 0)
       throw new Error("No sheets found in the file");
-    }
 
-    const sheet = workbook.Sheets["lpo"] || workbook.Sheets["LPO"];
-    if (!sheet) {
-      throw new Error("Sheet 'lpo' not found in the file");
-    }
+    const sheetName = workbook.SheetNames.find(
+      (name) => name.toLowerCase() === "lpo",
+    );
+
+    if (!sheetName) throw new Error("Sheet 'lpo' not found in the file");
+
+    const sheet = workbook.Sheets[sheetName]!;
 
     return sheet;
   }
@@ -122,7 +124,7 @@ export class ExcelFileProcessor {
    */
   private static convertSheetToJson(
     sheet: XLSX.WorkSheet,
-    headers: string[]
+    headers: string[],
   ): Record<string, unknown>[] {
     return XLSX.utils.sheet_to_json(sheet, {
       header: headers,

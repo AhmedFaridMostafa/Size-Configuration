@@ -1,4 +1,7 @@
-export interface LPOData {
+type HangerOrFlat = "Hang" | "Flat";
+
+type Gander = "boys" | "girls" | "unknown";
+interface LPOData {
   [key: string]: unknown;
   "Ref#": string;
   Color: string;
@@ -14,10 +17,10 @@ export interface LPOData {
   "Master Box Quantity": string | number;
   "PO Qty": string | number;
   Account: string;
-  "Hang/Flat": "Hang" | "Flat";
+  "Hang/Flat": HangerOrFlat;
 }
 
-export interface ProcessedRow extends LPOData {
+interface ProcessedRow extends LPOData {
   Gander: "BOYS" | "GIRLS" | "unknown";
   RefCode: string;
   LP: string;
@@ -36,7 +39,7 @@ export interface ProcessedRow extends LPOData {
   "Final QTY": number;
   Error?: string;
 }
-export interface ProcessedColumn extends LPOData {
+interface ProcessedColumn extends LPOData {
   Gander: "BOYS" | "GIRLS" | "unknown";
   "color Code": string;
   RefCode: string;
@@ -51,12 +54,12 @@ export interface ProcessedColumn extends LPOData {
   Error?: string;
 }
 
-export interface TableData {
+interface TableData {
   data: ProcessedRow[] | ProcessedColumn[];
   keys: (keyof ProcessedRow)[] | (keyof ProcessedColumn)[];
 }
 
-export type SizeCategories =
+type SizeCategories =
   | "Newborn"
   | "Infant"
   | "Toddler-(2T-4T)"
@@ -65,22 +68,22 @@ export type SizeCategories =
   | "Big-(7-16)"
   | "Big-(8-20)";
 
-export type HangerData = {
+type HangerData = {
   [key in SizeCategories]: { top: string; bottom: string };
 };
 
-export type Region = "US" | "target" | "walmart" | "EU" | "default";
-export interface SizeEntry {
+type Region = "US" | "target" | "walmart" | "EU" | "default";
+interface SizeEntry {
   order: number;
   boys: SizeCategories | "Kids-(2A-8A)" | "Big-(10A-16A)" | "";
   girls: SizeCategories | "Kids-(2A-8A)" | "Big-(10A-16A)" | "";
 }
 
-export type SizeMap = Partial<Record<SizeKey, SizeEntry>>;
+type SizeMap = Partial<Record<SizeKey, SizeEntry>>;
 
-export type SizeMappings = Record<Region, SizeMap>;
+type SizeMappings = Record<Region, SizeMap>;
 
-export type SizeKey =
+type SizeKey =
   | "3M"
   | "6M"
   | "9M"
@@ -123,4 +126,7 @@ export type SizeKey =
   | "14A"
   | "16A";
 
-export type Gander = "boys" | "girls" | "unknown";
+interface PolyBag {
+  individual: boolean;
+  master: boolean;
+}

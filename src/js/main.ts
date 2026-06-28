@@ -1,6 +1,5 @@
 // Import our custom CSS
 import "../scss/styles.scss";
-import { ProcessedColumn, ProcessedRow } from "./types";
 import { showError, toggleLoading } from "./utils/helpers";
 import { readExcelFile } from "./utils/fileHandler";
 import { renderTable } from "./components/table";
@@ -17,10 +16,10 @@ document.querySelectorAll(".dropdown-toggle").forEach((element) => {
 const form = document.getElementById("formFileSize")! as HTMLFormElement;
 const fileInput = document.getElementById("fileSize") as HTMLInputElement;
 const downloadSheet = document.getElementById(
-  "downloadSheet"
+  "downloadSheet",
 )! as HTMLButtonElement;
 const tableContainer = document.getElementById(
-  "table-container"
+  "table-container",
 )! as HTMLDivElement;
 
 // Typed variables
@@ -29,6 +28,7 @@ let excelColumns: ProcessedColumn[] | null = null;
 let keyExcelRows: (keyof ProcessedRow)[] | null = null;
 let excelRows: ProcessedRow[] | null = null;
 let renderTableOrNot = false;
+
 form.addEventListener("submit", handleFormSubmit);
 
 downloadSheet.addEventListener("click", () =>
@@ -45,8 +45,8 @@ downloadSheet.addEventListener("click", () =>
         name: "LPO_Rows_Data",
       },
     ],
-    fileInput.files?.[0]?.name
-  )
+    fileInput.files?.[0]?.name,
+  ),
 );
 
 async function handleFormSubmit(event: SubmitEvent) {
@@ -63,21 +63,20 @@ async function handleFormSubmit(event: SubmitEvent) {
       showError("No data found in the file");
       return;
     }
-
     // Create processor instance
     const processor = new LPOProcess(rows);
 
     // Process the data
-    const processed = processor.processSizeConfiguration();
+    const processed = await processor.processSizeConfiguration();
 
     // Get ordered keys for export
     keyExcelColumns = LPOProcess.getOrderedKeys(
       processed.generateColumns,
-      EXCEL_COLUMN_HEADERS
+      EXCEL_COLUMN_HEADERS,
     );
     keyExcelRows = LPOProcess.getOrderedKeys(
       processed.generateRows,
-      EXCEL_ROW_HEADERS
+      EXCEL_ROW_HEADERS,
     );
 
     document.getElementById("showTable")!.classList.remove("visually-hidden");
@@ -89,7 +88,7 @@ async function handleFormSubmit(event: SubmitEvent) {
     showError(
       `Processing failed: ${
         error instanceof Error ? error.message : "Unknown error"
-      }`
+      }`,
     );
   } finally {
     toggleLoading(false);

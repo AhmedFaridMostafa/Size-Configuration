@@ -1,4 +1,3 @@
-import { ProcessedColumn, ProcessedRow } from "../types";
 import { showError } from "./helpers";
 import {
   ExcelFileProcessor,
@@ -85,12 +84,12 @@ export class ExcelExporter {
    */
   private createSheetData(
     data: ProcessedColumn[] | ProcessedRow[],
-    keys: (keyof ProcessedColumn)[] | (keyof ProcessedRow)[]
+    keys: (keyof ProcessedColumn)[] | (keyof ProcessedRow)[],
   ): unknown[][] {
     return [
       keys,
       ...data.map((row) =>
-        keys.map((key) => row[key as keyof typeof row] ?? "")
+        keys.map((key) => row[key as keyof typeof row] ?? ""),
       ),
     ];
   }
@@ -112,7 +111,7 @@ export class ExcelExporter {
  */
 export function exportToExcel(
   data: ExportData[],
-  fileName: string | undefined
+  fileName: string | undefined,
 ): void {
   const exporter = new ExcelExporter(data, fileName);
   exporter.export();

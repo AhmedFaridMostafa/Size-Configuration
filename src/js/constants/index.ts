@@ -1,5 +1,3 @@
-import { HangerData, SizeCategories, SizeMappings } from "../types";
-
 export const SizeCategoriesOrdering: Record<
   SizeCategories | "Kids-(2A-8A)" | "Big-(10A-16A)",
   number
@@ -193,6 +191,7 @@ export const EXCEL_COLUMN_HEADERS = [
   "Main Fabric - Type",
   "Main Fabric - Content",
   "Main Fabric - WT/Const",
+  "PO QB",
   "Full Cartons",
   "Shortage",
   "Total Cartons Needed",
@@ -300,6 +299,7 @@ export const EXCEL_ROW_HEADERS = [
   "Main Fabric - Type",
   "Main Fabric - Content",
   "Main Fabric - WT/Const",
+  "PO QB",
   "Full Year",
   "Season Name",
   "Hanger Code Top",
@@ -376,10 +376,7 @@ export const LABEL_ZODE_MAP: Record<string, string> = {
   "QB -GRADE B -B/W": "QB",
 };
 
-export const POLY_BAG: Record<
-  string,
-  { individual: boolean; master: boolean }
-> = {
+export const POLY_BAG: Record<string, PolyBag> = {
   "AL-SRAD": { individual: true, master: true },
   "CENTRAL DEPARTMENT STORE LTD": { individual: true, master: false },
   "CHILE IAC": { individual: false, master: true },
